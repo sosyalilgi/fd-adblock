@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { spawnSync } = require('child_process');
 const { crc32 } = require('./png.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -85,8 +86,21 @@ function kayitOku(buf, k) {
 
 /* ============================================================ testler */
 console.log('\n1) Zip yapısı geçerli mi?');
+if (!fs.existsSync(ZIP)) {
+  // Paket .gitignore'da ve depo DIŞINDA tutulur; CI onu üretmez.
+  // Burada kendimiz üretiyoruz: test, paketleyicinin çıktısını
+  // doğrulamalı — üretip sonra "yok" deyip geçmek anlamsız olurdu.
+  console.log('   paket bulunamadı, üretiliyor...');
+  const p = spawnSync('node', [path.join(__dirname, 'package.js')], {
+    encoding: 'utf8'
+  });
+  if (p.status !== 0 || !fs.existsSync(ZIP)) {
+    check('paket üretilebildi', false, (p.stdout || '') + (p.stderr || ''));
+    process.exit(1);
+  }
+  check('paket üretildi', true);
+}
 check('paket dosyası var', fs.existsSync(ZIP), ZIP);
-if (!fs.existsSync(ZIP)) { console.log('\nÖnce node tools/package.js çalıştır.'); process.exit(1); }
 
 const buf = fs.readFileSync(ZIP);
 let zip;

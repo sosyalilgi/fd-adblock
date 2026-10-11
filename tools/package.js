@@ -189,6 +189,25 @@ function dogrula(dosyalar) {
   const hatalar = [];
   const yollar = new Set(dosyalar.map((f) => f.yol));
 
+  /* 0) Kaynak dosyalar SOZDIZIMSEL OLARAK GECERLI olmali.
+     Bozuk dosya pakete girerse Chrome yukleyemez. Testler yalnizca
+     o dosyayi require ederse duser; require etmeyen bir bozuk dosya
+     sessizce yayina gider.
+     2026-10-11: player-detect.js'in module.exports satiri bozuldu
+     ve paketlemci onu oldugu gibi pakete koydu. */
+  const { spawnSync } = require('child_process');
+  dosyalar.forEach((f) => {
+    if (!/\.js$/.test(f.yol)) return;
+    const r = spawnSync(process.execPath, ['--check', path.join(ROOT, f.yol)],
+      { encoding: 'utf8' });
+    if (r.status !== 0) {
+      const sat = (r.stderr || '').split('\n')
+        .find((l) => /Error/.test(l));
+      hatalar.push('bozuk sozdizimi: ' + f.yol +
+        (sat ? '  →  ' + sat.trim().slice(0, 50) : ''));
+    }
+  });
+
   // 1) Yinelenen ad — magaza acikca reddediyor
   const adlar = new Map();
   dosyalar.forEach((f) => {
