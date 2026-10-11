@@ -255,6 +255,21 @@ function probe() {
     out.player.hiz = v.playbackRate;
     out.player.sessiz = v.muted;
     out.player.sure = v.currentTime.toFixed(1) + '/' + (v.duration || 0).toFixed(1);
+
+    /* Oynatici yedeginin gercekten calisip calismadigini OLÇ.
+       ad-showing=true ve hiz=1 birlikte "reklam oynuyor ama
+       hizlandirmadi" demektir; bu iki sayi tek basina yeterli
+       kanit DEGILDIR. Yedegin kendi sayaclari vardir:
+         atlanan      -> "Atla" düğmesine basildi
+         hizlandirilan -> sessize alinip 16x yapildi
+       Ikisi de 0 ise yedek hic devreye girmedi. */
+    try {
+      out.player.yedek = (globalThis.FDI && typeof globalThis.FDI.playerStats === 'function')
+        ? globalThis.FDI.playerStats()
+        : null;
+    } catch (e) {
+      out.player.yedek = null;
+    }
   } else {
     out.player.durum = 'video yok';
   }
@@ -495,6 +510,9 @@ function render(r) {
     : [['Görünür reklam öğesi', 'yok', 'ok']];
   elOut.appendChild(renderCard('4 · Sızan reklamlar', visRows));
 
+  const yedek = r.player.yedek;
+  const yedekCalisti = yedek && (yedek.atlanan > 0 || yedek.hizlandirilan > 0);
+
   const playerRows = r.player.durum
     ? [['Oynatıcı', r.player.durum, 'warn']]
     : [
@@ -502,7 +520,16 @@ function render(r) {
         status(r.player.adShowing ? 'bad' : 'ok')],
       ['Oynatma hızı', r.player.hiz + 'x', r.player.hiz > 2 ? 'warn' : 'dim'],
       ['Sessiz', String(r.player.sessiz), 'dim'],
-      ['Süre', r.player.sure, 'dim']
+      ['Süre', r.player.sure, 'dim'],
+      // Yedek çalıştı mı: ad-showing VE hız tek başına yetmez.
+      // Yedek ancak ikisi birden anlamlı: reklam oynuyorken hız 16'dır.
+      ['Yedek devrede', !yedek ? 'BİLİNMİYOR (player.js yüklü değil)'
+        : yedekCalisti
+          ? 'EVET — ' + (yedek.atlanan ? yedek.atlanan + ' kez atlandı' : '') +
+            (yedek.atlanan && yedek.hizlandirilan ? ' + ' : '') +
+            (yedek.hizlandirilan ? yedek.hizlandirilan + ' kez 16x' : '')
+          : (r.player.adShowing ? 'HAYIR — reklam oynuyor ama yedek tetiklenmedi' : 'bekliyor (reklam yok)'),
+        !yedek ? 'warn' : (r.player.adShowing && !yedekCalisti ? 'bad' : yedekCalisti ? 'ok' : 'dim')]
     ];
   elOut.appendChild(renderCard('5 · Oynatıcı', playerRows));
 

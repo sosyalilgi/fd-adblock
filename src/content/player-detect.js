@@ -18,11 +18,23 @@
   'use strict';
 
   /* Reklam bari iceren seciciler. TEK BIR STRING olarak tutulur ve
-     querySelector'a oldugu gibi verilir. */
+     querySelector'a oldugu gibi verilir.
+
+     EN ONEMLI MADDE: `.html5-video-player.ad-showing`.
+     Bu YouTube'un KENDI bayragi — reklam oynatirken oynatici
+     kabina bu sinifi kendisi ekler. Modern YouTube reklamlari
+     gomulu bir web component icinde render edildigi icin
+     `.video-ads` gibi eski seciciler cogu zaman HIC YOKTUR.
+     Rapor: ad-showing=true iken hiz=1 — yani sinif var ama
+     eski seciciler bulunamadiyordu.
+
+     Siralama onemli: Once YouTube'un bayragi, sonra eski seciciler
+     (daha eski oynatici surumleri icin yedek yol). */
   var AD_SELECTORS = [
+    '#movie_player.ad-showing',
+    '.html5-video-player.ad-showing',
     '.video-ads',
     'ytd-player-legacy-desktop-watch-ads-renderer',
-    'ytd-player-legacy-desktop-watch-ads-renderer__player',
     '.ytp-ad-module',
     '.ytp-ad-overlay-container',
     '.ytp-ad-overlay-slot',

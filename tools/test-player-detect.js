@@ -16,15 +16,34 @@ const check = (n, c, x) => {
 };
 
 /* ---- sahte DOM ogeleri ---- */
-function el({ sabit = false, w = 400, h = 250, disabled = false } = {}) {
+function el({ sabit = false, w = 400, h = 250, disabled = false, adShowing = false } = {}) {
   return {
     disabled,
+    adShowing,
     get offsetParent() { return sabit ? null : {}; },
     getBoundingClientRect: () => ({ width: w, height: h }),
+    classList: { contains: (c) => c === 'ad-showing' && adShowing },
     click() { this.tiklandi = true; }
   };
 }
 const sorguIle = (harita) => (sel) => harita[sel] || null;
+
+/* Gercek querySelector gibi davranan sahte. AD_SELECTORS virgulle
+   BIRLESTIRILMIS bir liste oldugu icin parcalara bolunur ve
+   parcalardan herhangi biri eslesirse oge doner. */
+function sorguSinifli(oge) {
+  return (sel) => {
+    if (!oge) return null;
+    return sel.split(',').some((parca) => {
+      const p = parca.trim();
+      const sinifSarti = p.match(/\.([a-z][a-z0-9-]*)$/i);
+      if (sinifSarti) return oge.classList.contains(sinifSarti[1]);
+      // sinif sarti olmayan parcalar (orn. ".video-ads" -> sinif var)
+      if (p.startsWith('.')) return oge.classList.contains(p.slice(1));
+      return false;
+    }) ? oge : null;
+  };
+}
 
 console.log('\n1) Seciciler DOGRU turde (bu, ilk hatanin sebebiydi)');
 check('AD_SELECTORS bir string', typeof PD.AD_SELECTORS === 'string', typeof PD.AD_SELECTORS);
@@ -89,6 +108,42 @@ console.log('\n6) Bozuk/eksik DOM cokmemeli');
   check('sorgu patlayinca false', PD.reklamVarMi(patlayan) === false);
   check('sorgu patlayinca atla null', PD.atlaDugmesi(patlayan) === null);
   check('sorgu null dondurunce false', PD.reklamVarMi(() => null) === false);
+}
+
+console.log('\n7) GERCEK RAPORDAN GELEN SENARYO');
+/* Kullanici raporu: ad-showing=true, hiz=1 — reklam oynuyor ama
+   yedek devreye girmemis. Eski seciciler (.video-ads vb.) modern
+   YouTube'da HIC YOKTUR: reklam gomulu bir web component icinde
+   render edilir. Tek guvenilir sinyal YouTube'un kendi sinifi. */
+{
+  check('#movie_player.ad-showing secicisi VAR',
+    PD.AD_SELECTORS.indexOf('#movie_player.ad-showing') !== -1);
+  check('.html5-video-player.ad-showing secicisi VAR',
+    PD.AD_SELECTORS.indexOf('.html5-video-player.ad-showing') !== -1);
+  check('YouTube bayragi ESKI secicilerden ONCE geliyor',
+    PD.AD_SELECTORS.indexOf('#movie_player.ad-showing') <
+    PD.AD_SELECTORS.indexOf('.video-ads'));
+
+  // Reklam oynuyor: sinif var
+  const oynatan = el({ w: 1280, h: 720, adShowing: true });
+  check('ad-showing varken reklam bulunuyor',
+    PD.reklamVarMi(sorguSinifli(oynatan)) === true);
+
+  // Reklam bitti: sinif kalkti
+  const bitti = el({ w: 1280, h: 720, adShowing: false });
+  check('ad-showing kalkinca false donuyor',
+    PD.reklamVarMi(sorguSinifli(bitti)) === false);
+
+  // Oynatici hic yok
+  check('oynatici yoksa false', PD.reklamVarMi(sorguSinifli(null)) === false);
+}
+
+console.log('\n8) Atla düğmesi Yine de calisiyor mu?');
+{
+  const dugme = el();
+  const s = sorguIle({ [PD.SKIP_SELECTORS]: dugme });
+  check('atla düğmesi bulunuyor (yeni seciciler eklenince bozulmadi)',
+    PD.atlaDugmesi(s) === dugme);
 }
 
 console.log('\n==============================');
