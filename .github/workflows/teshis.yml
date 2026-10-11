@@ -1,0 +1,81 @@
+name: Teshis
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  teshis:
+    name: Teshis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 01 node surumu
+        run: node --version
+
+      - name: 02 repo icerigi
+        run: ls tools/ | head -40
+
+      - name: 03 player-detect yukleniyor mu
+        run: node -e "require('./src/content/player-detect.js'); console.log('YUKLENDI')"
+
+      - name: 04 player-detest tek kontrol
+        run: |
+          const PD = require('./src/content/player-detect.js');
+          if (typeof PD.plan !== 'function') throw new Error('plan yok');
+          if (PD.plan({ atlaVar: false, sure: 15 }).aksiyon !== 'sonlandir')
+            throw new Error('plan sonlandir vermedi');
+          console.log('PLAN OK');
+
+      - name: 05 turkce karakter kontrolu
+        run: |
+          node -e "
+            const fs=require('fs');
+            const s=fs.readFileSync('tools/test-player-detect.js','utf8');
+            if (s.indexOf('ş') === -1 && s.indexOf('ğ') === -1) throw new Error('TR yok');
+            console.log('TR OK');
+          "
+
+      - name: 06 validate calisiyor mu
+        run: node tools/validate.js | tail -5
+
+      - name: 07 validate cikis kodu
+        run: |
+          node tools/validate.js > /dev/null 2>&1
+          echo "cikis kodu: $?"
+
+      - name: 08 test-player-detect tam
+        run: node tools/test-player-detect.js 2>&1 | tail -20
+
+      - name: 09 test-mustblock tam
+        run: node tools/test-mustblock.js 2>&1 | tail -20
+
+      - name: 10 spawnSync calisiyor mu
+        run: |
+          node -e "
+            const {spawnSync}=require('child_process');
+            const r=spawnSync('node',['-e','console.log(42)'],{encoding:'utf8'});
+            if (r.status !== 0) throw new Error('spawnSync status='+r.status);
+            console.log('SPAWN OK', r.stdout.trim());
+          "
+
+      - name: 11 require player-detect dogrudan
+        run: |
+          node -e "
+            const PD = require('./src/content/player-detect.js');
+            console.log('anahtarlar:', Object.keys(PD).join(','));
+          "
+
+      - name: 12 plan canli yayin
+        run: |
+          node -e "
+            const PD = require('./src/content/player-detect.js');
+            console.log('Infinity ->', PD.plan({atlaVar:false, sure:Infinity}).aksiyon);
+            console.log('0 ->', PD.plan({atlaVar:false, sure:0}).aksiyon);
+            console.log('15 ->', PD.plan({atlaVar:false, sure:15}).aksiyon);
+          "
