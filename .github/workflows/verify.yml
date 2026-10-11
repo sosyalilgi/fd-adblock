@@ -47,8 +47,13 @@ jobs:
           done
           echo "Gizlilik politikasi dosyalari mevcut."
 
-      # Testleri listeleyip sonraki ise gecir. Yonlendirme (>-)
-      # kullanilir; GitHub cikti dosyalari ozel karakteri barindirir.
+      # Testleri listeleyip sonraki ise gecir.
+      #
+      # ONEMLI: burada SADECE .js atilir. "test-" oneki KORUNMALIDIR.
+      # Once hata yapildi: onek burada kaldirilip asagida geri
+      # eklenmedi, "node tools/player-detect.js" denendi ve dosya
+      # yok diye dustu. "png" ise tools/png.js YANLISLIKLA calistigi
+      # icin gecerli gorundu — sahte pozitif. Onek oldugu gibi birakilir.
       - name: Testleri listele
         id: testleri
         run: |
@@ -56,7 +61,7 @@ jobs:
             const fs = require('fs');
             const a = fs.readdirSync('tools')
               .filter(f => f.endsWith('.js') && f.startsWith('test-'))
-              .map(f => f.slice(5, -3))
+              .map(f => f.slice(0, -3))
               .sort();
             console.log('[' + JSON.stringify(a).slice(1, -1) + ']');
           " > /tmp/testler.json
