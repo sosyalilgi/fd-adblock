@@ -59,6 +59,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/configure-pages@v5
+        # NOT: Bu adim "Pages kapalı" hatası verirse depo ayarı eksiktir.
+        # Ayarlar -> Pages -> Build and deployment -> Source:
+        #   "GitHub Actions" secili olmali.
+        # Bu, depoda YALNIZCA elle yapilabilir; workflow kendisi acamaz.
+        continue-on-error: false
+
+      - name: Pages acik mi? (daha anlasilir hata icin)
+        if: failure()
+        run: |
+          echo "::error title=Pages kapali::Bu depo icin GitHub Pages acik degil."
+          echo "::error::1) https://github.com/sosyalilgi/fd-adblock/settings/pages adresine git"
+          echo "::error::2) 'Build and deployment' bolumunde Source: 'GitHub Actions' sec"
+          echo "::error::3) Kaydet. Bu adim elle yapilmalidir, workflow acamaz."
+          echo "::error::4) Sonra değişikliği main'e pushla."
+          exit 1
 
       - uses: actions/upload-pages-artifact@v3
         with:
