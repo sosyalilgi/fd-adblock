@@ -35,6 +35,19 @@ jobs:
           fi
           echo "docs/ senkron."
 
+      - name: Sürüm tutarlılığı (README / TEKNIK-DETAY / zip)
+        run: node tools/test-version.js
+
+      - name: Magaza gorselleri hazir mi?
+        run: node tools/check-screenshots.js
+
+      - name: Tum testler
+        run: |
+          for f in tools/test-*.js; do
+            echo "--- $f"
+            node "$f"
+          done
+
       - name: Gizlilik politikasi gercekten var mi?
         run: |
           # Politika dosyalari depoda olmali

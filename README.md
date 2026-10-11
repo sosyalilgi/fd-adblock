@@ -1,159 +1,159 @@
+<div align="center">
+
 # FD Reklam Engelleyici
 
-**Geliştirici:** Ferhat Doğan · **E-posta:** [ferhatdogan55@gmail.com](mailto:ferhatdogan55@gmail.com) · **Web:** [266hosting.com](https://266hosting.com) · © 2026 Tüm hakları saklıdır.
+**YouTube'daki reklamları engeller, sayfayı temizler.**
 
-YouTube reklamlarını engelleyen, sayfayı kozmetik olarak temizleyen Manifest V3
-tarayıcı eklentisi. Chrome, Edge ve Brave ile çalışır. Sürüm 1.13.0.
+Chrome · Edge · Brave
 
-> Sürüm satırı `manifest.json` ile eşleşmelidir.
+[![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-1.20.0-16a34a)](manifest.json)
+[![Manifest](https://img.shields.io/badge/manifest-MV3-4285f4)](manifest.json)
+[![Lisans](https://img.shields.io/badge/lisans-MIT-a475f9)](LICENSE)
+
+[⬇ Kurulum](#kurulum) · [🛠 Kullanım](#kullanım) · [🔒 Gizlilik](#gizlilik) · [❓ SSS](#sss)
+
+</div>
+
+---
+
+## Ne yapar
+
+YouTube'da açılan reklamları durdurur ve sayfadaki gereksiz öğeleri gizler.
+
+- 🎬 Videonun başında, ortasında ve sonundaki reklamlar
+- 🖼️ Ana sayfadaki reklam kutuları ve öneri şeritleri
+- ➕ Yan çubuktaki "Şunları beğenebilirsiniz" listeleri
+- 💬 Yorum bölümündeki spam ve ilgisiz yorumlar
+- 🔔 Premium'a yönlendiren reklamlar
+
+**Reklamları göstermeden engeller.** Reklam oynatıcıda belirdiği anda atlanır
+veya sonuna sarılır — ekranda bir görüntü kalmaz.
+
+---
 
 ## Kurulum
 
-1. Tarayıcıda `chrome://extensions` (Edge: `edge://extensions`, Brave: `brave://extensions`) adresini aç.
-2. **Geliştirici modu** anahtarını aç (sağ üstte).
-3. **Paketi çözülmemiş olarak yükle** butonuna tıkla.
-4. Bu klasörü seç: `fd-adblock`
+Tarayıcı eklentileri mağazadan yüklemek yerine, klasörü doğrudan yüklüyoruz.
 
-> Değişiklik yaptıktan sonra eklenti sayfasındaki **yenile** (⟳) ikonuna bas,
-> ardından YouTube sekmesini **Ctrl+Shift+R** ile yeniden yükle — content script'ler
-> açık sekmelerde kendiliğinden güncellenmez.
+1. Tarayıcının eklenti sayfasını açın:
+   - Chrome → `chrome://extensions`
+   - Edge → `edge://extensions`
+   - Brave → `brave://extensions`
+2. Sağ üstteki **Geliştirici modu** anahtarını açın.
+3. **Paketi çözülmemiş olarak yükle** butonuna tıklayın.
+4. Bu klasörü seçin: `fd-adblock`
+
+> **Güncelleme sonrası:** Eklenti sayfasındaki ⟳ düğmesine basın, sonra
+> YouTube sekmesini `Ctrl+Shift+R` ile yenileyin. Eklentiler açık sekmelerde
+> kendiliğinden güncellenmez.
+
+**Gereksinim:** Chrome 111 veya üzeri.
+
+---
 
 ## Kullanım
 
-| Ne | Nerede |
+| Ne yapmak istiyorum | Nasıl |
 |---|---|
-| Aç / kapa | Araç çubuğu ikonu (veya `Alt+Shift+Y`) |
-| Engellenen reklam / istek sayısı | Popup ve ayar sayfası |
-| Temizlik seçenekleri | Ayarlar → *Kozmetik temizlik* |
-| Bir öğeyi kalıcı gizle | YouTube'da **sağ tık → FD: Bu öğeyi engelle** |
-| Sorun giderme | Popup veya ayarlar → *Tanılama* |
+| Açmak / kapatmak | Araç çubuğundaki simgeye tıklayın |
+| Engellenen reklam sayısını görmek | Aynı simgeye tıklayın — sayaçlar orada |
+| Sayfadan bir şeyleri kaldırmak | Ayarlar → *Kozmetik temizlik* |
+| Belirli bir öğeyi gizlemek | YouTube'da öğeye **sağ tık → FD: Bu öğeyi engelle** |
+| Sorun gidermek | Ayarlar → *Tanılama* |
 
-## Nasıl çalışır
+**Kısayol:** `Alt + Shift + Y` eklenti menüsünü açar.
 
-| Katman | Dosya | Ne yapar |
-|---|---|---|
-| Ağ | `src/rules/network.json` | 20 `declarativeNetRequest` kuralı. Reklam sunucularına giden istekleri tarayıcı motoru seviyesinde durdurur — sayfa yavaşlamaz. |
-| Veri budama | `src/content/json-prune.js` | `JSON.parse` tuzağı. Oynatıcı veriyi okumadan **önce** `adPlacements`, `playerAds`, `adSlots` ve reklam renderer'ları yanıttan silinir. |
-| Ağ gövdesi | `src/content/net-hook.js` | `fetch`/XHR yanıtlarını budar, `/player` isteğine `isInlinePlaybackNoAd` sinyali enjekte eder. |
-| Algılama karşıtı | `src/content/anti-detect.js` | `toString` maskeleme, `yt.config_` temizliği, **googletag sahtelemesi**. |
-| Kozmetik | `src/rules/cosmetic.css` | 7 grup; her biri ayarlar sayfasından tek tek kapatılabilir. |
-| Oynatıcı | `src/content/player.js` | Sızan reklamların "Atla" düğmesine tıklar, atlanamayanları 16x hızlandırır. |
-| Element seçici | `src/content/selector-gen.js` + `picker.js` | CSS seçici üretir ve kalıcı kurala çevirir. |
-| Tanılama | `src/diag/` | Aktif sekmeyi canlı tarar, hangi katmanın çalıştığını raporlar. |
+### Tanılama nedir?
 
-`json-prune.js`, `net-hook.js` ve `anti-detect.js` **ana dünyada** (`world: "MAIN"`)
-çalışır — çünkü YouTube'un kendi JavaScript'iyle aynı bağlamda olmalılar.
-Dosyaların geri kalanı izole dünyada çalışır ve `chrome.storage` erişimi sağlar.
+Ayarlar'daki **Tanılama** sayfası, açık olan YouTube sekmesini tarar ve şunları
+söyler:
 
-## Tespit karşıtı stratejisi
+- Reklam engelleme çalışıyor mu?
+- Hangi öğeler sızdı?
+- YouTube eklentiyi fark etti mi?
+- Sayfanın hangi bölümündesiniz (ana sayfa, video, Shorts, canlı yayın)?
 
-YouTube, gerçek bir tarayıcıda oynatıcı yanıtında `adPlacements` alanının
-**daima bulunduğunu** bekler. Alanın tamamen kaybolması "cevap kurcalandı"
-sinyali verebilir. Ayarlar sayfasından iki yaklaşım arasında geçiş yapılabilir:
+Bir sorun bildirecekseniz bu sayfadaki **Raporu kopyala** düğmesi en hızlı
+yoldur — tüm bilgi tek mesajda hazır gelir.
 
-- **Alanları sil** (varsayılan) — en verimli, en az veri bırakır.
-- **Alanları boşalt** — alan yerinde kalır ama boş diziye çevrilir; tespit
-  ihtimalini azaltır, ancak bazı oynatıcı sürümlerinde oynatmayı bozabilir.
+---
 
-Hangisinin sizin hesabınızda daha iyi çalıştığını **Tanılama** sayfası söyler.
+## Gizlilik
 
-## Ağ katmanı nasıl ölçülür?
+**Hiçbir veri toplamıyoruz. Hiçbir şey göndermiyoruz.**
 
-`declarativeNetRequest`, ağ yığınından **önce** çalışır. Bu yüzden
-`chrome.webRequest.onErrorOccurred` engellemeleri **raporlamaz** (denendi,
-boş döndü) ve bu yüzden kullanılmaz — işe yaramayan bir izin bırakmıyoruz.
+Sunucumuz, analitik, telemetri veya uzak yapılandırma yoktur. Tüm işlemler
+cihazınızda gerçekleşir.
 
-Ölçüm iki katmanlıdır:
+- Hesap gerekmez, giriş yapılmaz
+- Reklam verileri cihazdan çıkmaz
+- 14 günlük geçmiş yalnızca kendi tarayıcınızda saklanır
 
-1. **Blok imzası (sezgisel)** — `performance` kaydında `transferSize 0` +
-   `status 0` + süre < 150 ms. DNR ağa hiç çıkmadığı için istek 1-3 ms'de
-   çöker; gerçek ağ hatası (DNS/TLS) genelde 100 ms üstündür. Popup'taki
-   "Ağdan engellendi" sayacı budur. Ekstra izin gerektirmez.
-2. **A/B testi (kesin kanıt)** — Tanılama sayfası aynı adreslere kurallar
-   açıkken ve kapalıyken istek atar. Yalnızca *açıkken geçemiyor, kapalıyken
-   geçiyor* olan adresler kanıt sayılır. `robots.txt` kontrol adresi
-   engellenirse sonuç geçersiz sayılır.
+[Politikamızın tamamı](https://sosyalilgi.github.io/fd-adblock/privacy.html) ·
+[Destek sayfası](https://sosyalilgi.github.io/fd-adblock/support.html)
 
-## Geliştirici araçları
+---
 
-```bash
-node tools/validate.js     # network.json'ı DNR şemasına göre doğrular
-node tools/package.js      # dağıtım zip'ini üretir
-```
+## SSS
 
-`network.json`'a elle kural eklerken önce `validate.js` çalıştırın — id
-çakışması, geçersiz regex ve "asla eşleşmeyen" koşulları yakalar.
+**"Reklam engelleyici bulundu" penceresi çıkıyor.**
 
-## Bilinen sınırlar
+Ayarlar → *Algılama karşıtı*'nı açın ve sayfayı yenileyin. Bu seçenek
+**varsayılan olarak kapalıdır** — ne yaptığımızı saklamak yerine size seçeneğe
+sunuyoruz.
 
-- **Sunucu tarafı reklam ekleme (SSAI):** YouTube bazı reklamları doğrudan video
-  akışına gömer. Hiçbir eklenti bunları engelleyemez.
-- **Bakım:** YouTube sık sık iç sınıf adlarını ve JSON şemasını değiştirir. Bir
-  reklam sızmaya başlarsa önce Tanılama sayfasına bakın, sonra
-  `src/rules/cosmetic.css` içindeki seçicileri güncelleyin.
-- **Oturum sayaçları** `chrome.storage.session` içindedir, tarayıcı kapanınca
-  sıfırlanır. Kalıcı trend için ayar sayfasındaki *Son 14 gün* grafiğini kullanın.
-- **Chrome 111+** gerekir (`world: "MAIN"` için).
+**Gizlemek istediğim bir şey kayboldu.**
 
-## Algılama karşıtı seçeneği
+Ayarlar → *Kozmetik temizlik*'te 7 ayrı grup var. Kapatmak istediğiniz özelliği
+toggleyin; sayfa hemen düzelir.
 
-YouTube, eklenti varlığını fark ederse "reklam engelleyici bulundu" penceresi
-gösterebilir. `src/content/anti-detect.js` bu pencereyi bastırmaya çalışır.
+**Reklam hâlâ oynuyor.**
 
-**Varsayılan olarak KAPALIDIR** ve Ayarlar'dan açılır. Kapalıyken bu dosya
-hiçbir hook kurmaz — sayfaya hiç dokunmaz.
+Tanılama sayfasını açıp **Raporu kopyala** deyin. Rapor hangi katmanın
+çalıştığını ve neyin sızdığını gösterir.
 
-İki nedenle kapalı:
+**Sayaçlar neden sıfır?**
 
-1. **Şeffaflık.** Kullanıcı tam olarak neyin çalıştığını bilmeli.
-2. **Mağaza incelemesi.** Yaptığı işi gizleyen kod, reklam engellemeden ayrı
-   bir davranış olarak değerlendirilebilir. Kapalıyken ortada hiç yoktur.
+Oturum sayaçları tarayıcı kapanınca sıfırlanır. Kalıcı istatistik için
+Ayarlar'daki *Son 14 gün* grafiğini kullanın.
 
-> Ayarı değiştirdikten sonra **sayfayı yeniden yüklemeniz gerekir.** Kurulmuş
-> bir JS hook'unu geri sökmek güvenilir değildir; bu yüzden geri alma yok.
+**Başka bir sitede çalışır mı?**
 
-## Chrome Web Mağazası
+Hayır. Eklenti yalnızca YouTube'da çalışır ve yalnızca YouTube'daki reklamları
+engeller.
 
-Yayınlamak için hazırlanmış dosyalar:
+---
 
-| Klasör | İçerik |
-|---|---|
-| `store/STORE-SUBMISSION.md` | Mağaza formunun tüm alanları, izin gerekçeleri, kontrol listesi |
-| `store/listing-long-en.md` | Uzun açıklama (İngilizce) |
-| `store/listing-long-tr.md` | Uzun açıklama (Türkçe) |
-| `web/privacy.html` | GitHub Pages için gizlilik politikası |
-| `web/support.html` | GitHub Pages için destek sayfası |
+## Bilmeniz gerekenler
 
-Eklentinin içinde de `src/privacy.html` var — çevrimdışı da çalışır.
+**Bir kısım reklamlar engellenemez.** YouTube bazı reklamları doğrudan video
+akışına gömer. Bunların hiçbir eklenti durduramaz.
 
-> Chrome Web Mağazası reklam **engelleyen** eklentileri kabul eder; yasak olan
-> reklam **sıkan** eklentilerdir.
+**Gömülü video.** `youtube.com/embed/...` adresini sekmede açarsanız çalışır.
+Bir blogun içine gömüldüğünde çalışmaz — eklenti yalnızca YouTube'da yetkili.
 
-## Klasör yapısı
+---
 
-```
-fd-adblock/
-├── manifest.json
-├── icons/                  16 / 32 / 48 / 128 px PNG
-├── tools/
-│   ├── validate.js         DNR kural doğrulayıcı
-│   └── package.js          zip paketleyici
-└── src/
-    ├── background.js       sayaçlar, rozet, sağ tık menüsü, geçmiş
-    ├── popup/              aç/kapa + sayaçlar
-    ├── options/            temizlik seçenekleri + 14 günlük grafik
-    ├── diag/               tanılama sayfası
-    ├── content/
-    │   ├── json-prune.js   [ANA DÜNYA] JSON.parse tuzağı
-    │   ├── net-hook.js     [ANA DÜNYA] fetch/XHR
-    │   ├── anti-detect.js  [ANA DÜNYA] algılama karşıtı
-    │   ├── selector-gen.js [saf] CSS seçici üretimi
-    │   ├── picker.js       [İZOLE] element seçici arayüzü
-    │   ├── prefs.js        [İZOLE] ayarlar
-    │   ├── cosmetic.js     [İZOLE] kozmetik motor
-    │   ├── player.js       [İZOLE] oynatıcı yedek ağı
-    │   └── main.js         [İZOLE] orkestrasyon
-    └── rules/
-        ├── network.json    DNR ağ kuralları
-        └── cosmetic.css    gruplandırılmış gizleme seçicileri
-```
+## Katkı
+
+Kod açıktır. Hata bildirmek, öneri sunmak veya katkıda bulunmak için:
+[github.com/sosyalilgi/fd-adblock](https://github.com/sosyalilgi/fd-adblock)
+
+Yapının ayrıntıları, mimari ve geliştirici araçları için
+**[TEKNIK-DETAY.md](TEKNIK-DETAY.md)** dosyasına bakın.
+
+---
+
+## Lisans
+
+MIT
+
+---
+
+<div align="center">
+
+**Ferhat Doğan** · [ferhatdogan55@gmail.com](mailto:ferhatdogan55@gmail.com) · [266hosting.com](https://266hosting.com)
+
+© 2026 FD Reklam Engelleyici — Tüm hakları saklıdır.
+
+</div>
