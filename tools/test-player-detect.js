@@ -102,6 +102,26 @@ console.log('\n5) atlaDugmesi tiklanabilir olmali');
     PD.atlaDugmesi(sorguIle({ [PD.SKIP_SELECTORS]: { disabled: false } })) === null);
 }
 
+console.log('\n5b) GİZLİ "Atla" düğmesi YANLIŞLIKLA KULLANILMAMALI');
+/* Rapor: atlanan=21, sonlandirilan=0 — sarmaya hiç girilmemiş.
+   YouTube'un Atla düğmesi DOM'da baştan var ama ilk ~5 sn gizli.
+   Gizli düğmeye tıklamak etkisiz; plan() hemen sarmaya geçmeli. */
+{
+  const gizli = el({ w: 0, h: 0, sabit: true });   // offsetParent null + 0 boyut
+  const s = sorguIle({ [PD.SKIP_SELECTORS]: gizli });
+  check('gizli düğme null döndürüyor', PD.atlaDugmesi(s) === null);
+
+  // gizli düğme varsa plan "atla" DEMELİ, "sonlandir" demeli
+  const p = PD.plan({ atlaVar: PD.atlaDugmesi(s) !== null, sure: 38 });
+  check('gizli düğmede plan sonlandir', p.aksiyon === 'sonlandir', p.aksiyon);
+
+  const gorunur = el();                             // gerçek görünür düğme
+  const s2 = sorguIle({ [PD.SKIP_SELECTORS]: gorunur });
+  check('görünür düğme kabul ediliyor', PD.atlaDugmesi(s2) === gorunur);
+  check('görünür düğmede plan atla',
+    PD.plan({ atlaVar: PD.atlaDugmesi(s2) !== null, sure: 38 }).aksiyon === 'atla');
+}
+
 console.log('\n6) Bozuk/eksik DOM cokmemeli');
 {
   const patlayan = () => { throw new Error('DOM yok'); };

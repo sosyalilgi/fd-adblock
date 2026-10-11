@@ -76,7 +76,18 @@
     return gorunurMu(el);
   }
 
-  /* Tiklanabilir bir atla dugmesi var mi? */
+  /* Tiklanabilir bir atla dugmesi var mi?
+
+     GORUNURLUK KONTROLU KRITIK:
+     YouTube'un "Atla" dugmesi DOM'da reklamin BASINDAN itibaren
+     vardir, ama ilk ~5 saniye GIZLIDIR. Onceki surum yalnizca
+     "var mi / disabled mi" diyordu; gizli dugmeyi de tiklayip
+     atlanan sayacini artiriyordu, ama tiklamanin etkisi yoktu ve
+     reklam oynamaya devam ediyordu.
+
+     Rapor: atlanan=21, sonlandirilan=0 — sarmaya hic hicranmamis,
+     kullanici reklami gordu. Dugenin gercekten kullanilabilir
+     olmasi (gorunur) sart. */
   function atlaDugmesi(sorgu) {
     var btn;
     try {
@@ -87,6 +98,9 @@
     if (!btn || btn.disabled) return null;
     // Oge henuz DOM'a tam baglanmamis olabilir
     if (typeof btn.click !== 'function') return null;
+    // Gizli dugmeye tiklamak ise yaramaz; "yok" say ki plan()
+    // hemen sona sarma yoluna geçsin.
+    if (!gorunurMu(btn)) return null;
     return btn;
   }
 

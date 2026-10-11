@@ -6,7 +6,7 @@
 
 Chrome · Edge · Brave
 
-[![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-1.22.0-16a34a)](manifest.json)
+[![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-1.22.1-16a34a)](manifest.json)
 [![Manifest](https://img.shields.io/badge/manifest-MV3-4285f4)](manifest.json)
 [![Lisans](https://img.shields.io/badge/lisans-MIT-a475f9)](LICENSE)
 
