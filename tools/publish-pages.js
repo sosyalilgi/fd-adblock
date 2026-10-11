@@ -40,6 +40,10 @@ for (const ad of fs.readdirSync(KAYNAK)) {
 
 // ---- KOK'a indeks.html koy: Pages "/fd-adblock/" adresine gelince
 //      varsayilan 404 yerine baglantilar gorunsun.
+//
+//      Dil notu: privacy.html ve support.html Ingilizce (magaza listesi
+//     Ingilizce oldugu icin). Indeks de ayni dilde olmali; karisik
+//      sayfalar tutarsiz gorunuyor.
 const linkler = ['privacy.html', 'support.html']
   .filter((f) => fs.existsSync(path.join(HEDEF, f)))
   .map((f) => '      <li><a href="' + f + '">' + (f === 'privacy.html'
@@ -94,7 +98,7 @@ ${linkler}
 </ul>
 
 <footer>
-  <p>&copy; 2026 Ferhat Do&#287;an. T&#252;m haklar&#305; sakl&#305;d&#305;r.</p>
+  <p>&copy; 2026 Ferhat Do&#287;an. All rights reserved.</p>
   <p>
     <a href="https://266hosting.com">266hosting</a> &middot;
     <a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a>
