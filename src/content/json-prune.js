@@ -163,8 +163,16 @@
         adSlots: durum('adSlots'),
         enforcement: Object.prototype.hasOwnProperty.call(obj, 'enforcementMessageViewModel')
           ? 'VAR' : 'yok',
-        at: Date.now()
+        at: Date.now(),
+        /* Bu sayfada toplam kaç oynatıcı yanıtı gördük?
+           SPA geçişinde (oynatma listesi, ilgili videolar) her yeni
+           video için yeni yanıt gelir. Sayaç artmıyorsa budama o
+           geçişte DURMUŞ demektir. Sayaç artıyorsa budama çalışıyor
+           ve "kayıt eski" sadece o videoda reklam alanı olmadığı
+           anlamına gelir. İkisini ayırt etmek başka türlü mümkün değil. */
+        toplam: (FD.playerResponses || 0) + 1
       };
+      FD.playerResponses = FD.lastPlayerInfo.toplam;
     } catch (e) {}
   }
 

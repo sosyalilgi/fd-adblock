@@ -92,6 +92,13 @@ function probe() {
   out.prune.sayfaVideoId = sayfaId || '(bilinmiyor)';
   out.prune.kayitVideoId = kayitId || '(yok)';
   out.prune.uyusmazlik = uyusmazlik;
+  /* Bu sayfa açıldığından bu yana kaç oynatıcı yanıtı budandı?
+     Oynatma listelerinde ve ilgili videolarda her yeni video için
+     yeni yanıt gelir. Sayaç 1'de takılıyorsa budama SPA geçişinde
+     DURMUŞ demektir; artıyorsa çalışıyor ve "kayıt eski" yalnızca
+     o yanıtta reklam alanı bulunmadığı anlamına gelir.
+     Uyuşmazlık bayrağı tek başına hangisi olduğunu söylemez. */
+  out.prune.yanitSayisi = (fd && fd.playerResponses) || 0;
 
   if (pr || raw) {
     const src = pr || raw;
@@ -403,10 +410,21 @@ function render(r) {
     problems.push('Oynatıcı içinde ' + r.supheliToplam +
       ' "reklam gibi görünen" öğe bulundu (bilinen seçiciler dışında).');
   }
+  /* Uyuşmazlık, oynatma listelerinde (list=RD...) ve ilgili videolarda
+     NORMALDİR: her yeni video için yeni oynatıcı yanıtı gelir ve
+     kayıt yenisini gösterir. Yalnızca budama GERÇEKTEN durduysa
+     sorunludur — bunu "kaç yanıt gördük" sayacı söyler.
+     Sayaç büyüyorsa budama çalışıyor, alarm yanlıştır. */
   if (r.prune.bulundu && r.prune.uyusmazlik) {
-    problems.push('Ölçülen video ile sayfadaki video farklı (bayat oynatıcı yanıtı). Sayfayı yenile.');
+    const n = r.prune.yanitSayisi;
+    if (n <= 1) {
+      problems.push('Sayfa açıldığından beri yalnızca ' + n +
+        ' oynatıcı yanıtı budandı. Oynatma listesindeysen ve sayfayı ' +
+        'yenilemediysen sayfayı Ctrl+Shift+R ile yenile.');
+    }
+    // n > 1 ise: budama SPA geçişlerinde çalışıyor, alarm gürültü.
   }
-  if (r.prune.bulundu && r.prune.kaynak === 'budama kaydi') {
+  if (r.prune.bulundu && r.prune.kaynak === 'budama kaydi' && r.prune.yanitSayisi <= 1) {
     problems.push('Yanıt yalnızca budama kaydından okundu. Tam doğrulama için sayfayı Ctrl+Shift+R ile yenile.');
   }
   if (r.layers.kozmetikStil === 0 && !r.layers.kapali) problems.push('Kozmetik stiller enjekte edilmemiş.');
@@ -495,9 +513,13 @@ function render(r) {
   elOut.appendChild(renderCard('2 · Veri budama', pruneRows));
 
   if (r.prune.uyusmazlik) {
-    elOut.appendChild(el('p', 'dim',
-      'Sayfadaki video ile ölçülen video FARKLI. Global oynatıcı yanıtı bayatlamış ' +
-      '(SPA geçişi); taze kayıt kullanıldı. Tam doğrulama için sayfayı Ctrl+Shift+R ile yenile.'));
+    const n = r.prune.yanitSayisi;
+    elOut.appendChild(el('p', 'dim', n > 1
+      ? 'Sayfadaki video ile ölçülen video farklı, ancak bu sayfada ' + n +
+        ' oynatıcı yanıtı budandı — SPA geçişleri (oynatma listesi, ilgili videolar) ' +
+        'çalışıyor. Kayıt yalnızca en son yanıtı gösteriyor.'
+      : 'Sayfadaki video ile ölçülen video farklı ve bu sayfada yalnızca ' + n +
+        ' yanıt budandı. Sayfayı Ctrl+Shift+R ile yenile.'));
   }
 
   elOut.appendChild(renderCard('3 · Tespit sinyalleri', [
