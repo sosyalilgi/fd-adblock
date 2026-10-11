@@ -1,0 +1,101 @@
+{
+  "manifest_version": 3,
+  "name": "FD Reklam Engelleyici",
+  "version": "1.15.0",
+  "description": "YouTube reklamlarını engeller ve sayfayı kozmetik olarak temizler.",
+  "author": "Ferhat Doğan",
+  "homepage_url": "https://266hosting.com",
+  "minimum_chrome_version": "111",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "permissions": [
+    "declarativeNetRequest",
+    "storage",
+    "scripting",
+    "contextMenus"
+  ],
+
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://*.youtube-nocookie.com/*",
+    "*://*.doubleclick.net/*",
+    "*://*.googlesyndication.com/*",
+    "*://*.googlevideo.com/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background.js"
+  },
+
+  "action": {
+    "default_title": "FD Reklam Engelleyici",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "options_page": "src/options/options.html",
+
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+Y",
+        "mac": "Alt+Shift+Y"
+      },
+      "description": "FD Reklam Engelleyici menüsünü aç"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": [
+        "src/content/json-prune.js",
+        "src/content/net-hook.js",
+        "src/content/anti-detect.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": [
+        "src/content/prefs.js",
+        "src/content/cosmetic.js",
+        "src/content/player.js",
+        "src/content/main.js"
+      ],
+      "run_at": "document_start",
+      "world": "ISOLATED",
+      "all_frames": false
+    }
+  ],
+
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "fd_network",
+        "enabled": true,
+        "path": "src/rules/network.json"
+      }
+    ]
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["src/rules/cosmetic.css"],
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"]
+    }
+  ]
+}

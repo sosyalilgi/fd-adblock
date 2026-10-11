@@ -1,0 +1,115 @@
+/* =====================================================================
+   FD Reklam Engelleyici — Kozmetik filtre listesi
+   ---------------------------------------------------------------------
+   Her blok "/* @group <anahtar> *\/" etiketiyle başlar.
+   cosmetic.js bu dosyayı parçalara böler ve her grup için ayrı bir
+   <style> etiketi enjekte eder. Böylece her grup çalışma anında
+   tek tek açılıp kapatılabilir.
+   ===================================================================== */
+
+/* @group ads */
+#masthead-ad,
+#player-ads,
+#panels-full-bleed-container > ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
+ytd-engagement-panel-section-list-renderer[target-id*="ads"]:not([target-id*="reel"]),
+ytd-ad-slot-renderer,
+ytd-display-ad-renderer,
+ytd-in-feed-ad-layout-renderer,
+ytd-promoted-sparkles-web-renderer,
+ytd-companion-slot-renderer,
+ytd-video-ad-renderer,
+ytd-action-companion-ad-renderer,
+ytd-statement-banner-renderer,
+ytd-banner-promo-renderer,
+ytd-primetime-promo-renderer,
+ytd-ad-layout-renderer,
+.ytd-video-ads,
+.video-ads.ytp-ad-module,
+.ytp-ad-overlay-slot,
+.ytp-ad-image-overlay,
+.ytp-ad-text-overlay,
+.ytp-ad-preview-container,
+ytm-companion-ad-renderer,
+ytm-promoted-video-renderer,
+ytm-inline-ad-renderer,
+.ytp-ad-module .ytp-ad-player-overlay,
+#shorts-container > ytd-ad-slot-renderer,
+#related #player-ads,
+#related ytd-ad-slot-renderer {
+  display: none !important;
+}
+
+/* @group upsell */
+yt-mealbar-promo-renderer,
+.ytp-mealbar-promo,
+ytd-popup-container:has(ytd-upsell-dialog-renderer),
+ytd-popup-container:has(a[href="/premium"]),
+ytd-upsell-dialog-renderer,
+.ytp-premium-upsell,
+.ytp-upsell-content,
+.ytd-popup-container tp-yt-paper-dialog:has(yt-mealbar-promo-renderer),
+ytd-banner-promo-renderer[is-upsell],
+.ytd-consent-bump-v2-lightbox,
+tp-yt-paper-dialog:has(.ytp-paid-content-upsell),
+.ytd-premium-upsell-renderer,
+ytm-mealbar-promo-renderer {
+  display: none !important;
+}
+
+/* @group clutter-home */
+ytd-rich-shelf-renderer[is-shorts],
+ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+ytd-guide-entry-renderer:has(a[href="/shorts"]),
+ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+ytd-rich-grid-row:has(ytd-rich-item-renderer:has(a[href^="/shorts/"])) ytd-rich-item-renderer,
+ytd-shelf-renderer:has(a[href^="/shorts/"]),
+ytd-rich-section-renderer:has(ytd-rich-item-renderer a[href^="/shorts/"]),
+.ytp-featured-product-renderer,
+ytd-merch-shelf-renderer,
+.ytp-merch-shelf-renderer {
+  display: none !important;
+}
+
+/* @group clutter-related */
+#related #compact-autoplay,
+ytd-watch-next-secondary-results-renderer:has(ytd-compact-video-renderer a[href^="/shorts/"]),
+#related ytd-compact-video-renderer:has(a[href^="/shorts/"]),
+ytd-compact-video-renderer:has(a[href^="/shorts/"]) {
+  display: none !important;
+}
+
+/* @group clutter-comments */
+#comments,
+ytd-comments,
+ytd-comments-header-renderer,
+#comment-section,
+ytd-item-section-renderer:has(#header-text.ytd-comments-header-renderer),
+ytd-item-section-renderer:has(ytd-comments-header-renderer) {
+  display: none !important;
+}
+
+/* @group player */
+.ytp-endscreen-content,
+.ytp-ce-element,
+.ytp-ce-covering-element,
+.ytp-annotation,
+.ytp-cards-teaser,
+.ytp-cards-button,
+.ytp-preview-overlay,
+.ytp-pause-overlay,
+.ytp-suggested-action,
+.ytd-endscreen-content-renderer,
+.ytp-featured-product-bubble-renderer {
+  display: none !important;
+}
+
+/* @group misc */
+ytd-notification-topbar-button-view-model:has(ytm-notification-multi-action-renderer),
+yt-live-chat-renderer:has(ytd-live-chat-ad-banner-renderer),
+ytd-live-chat-ad-banner-renderer,
+.ytp-featured-product-carousel-message-renderer,
+ytd-popup-container:has(ytd-toast-renderer),
+#dismissible-popup,
+.ytp-ivh-content:has(a[href*="premium"]) {
+  display: none !important;
+}

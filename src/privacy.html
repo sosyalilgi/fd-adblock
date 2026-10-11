@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gizlilik Politikası — FD Reklam Engelleyici</title>
+<style>
+  body { margin:0; padding:36px 22px 60px; font:15.5px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         background:#f8fafc; color:#0f172a; }
+  @media (prefers-color-scheme: dark) { body { background:#0b1220; color:#e2e8f0; } }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  .meta { color:#64748b; font-size:13.5px; margin:0 0 26px; }
+  h2 { font-size:17px; margin:28px 0 8px; }
+  .big { border:1px solid #16a34a; border-radius:12px; background:rgba(22,163,74,.09); padding:14px 16px; margin:20px 0; }
+  .big b { display:block; font-size:16px; margin-bottom:3px; }
+  ul { padding-left:22px; } li { margin-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid rgba(127,127,127,.25); vertical-align:top; }
+  th { color:#64748b; font-weight:600; }
+  code { background:rgba(127,127,127,.16); padding:1px 5px; border-radius:4px; font-size:13.5px; }
+  a { color:#0284c7; }
+  footer { margin-top:40px; padding-top:16px; border-top:1px solid rgba(127,127,127,.3);
+          color:#64748b; font-size:13px; text-align:center; }
+  footer p { margin:5px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Gizlilik Politikası</h1>
+<p class="meta">FD Reklam Engelleyici · Son güncelleme: Ekim 2026</p>
+
+<div class="big">
+  <b>Hiçbir veri toplamıyoruz, hiçbir şey göndermiyoruz.</b>
+  Sunucumuz, analitik, telemetri veya uzak yapılandırma yok. Tüm analiz cihazında çalışır.
+</div>
+
+<h2>Özet</h2>
+<table>
+  <tr><th>Kullanıcı verisi topluyor musunuz?</th><td><b>Hayır</b></td></tr>
+  <tr><th>Cihaz dışına bir şey gönderiyor musunuz?</th><td><b>Hayır</b></td></tr>
+  <tr><th>Üçüncü taraf analitik kullanıyor musunuz?</th><td><b>Hayır</b></td></tr>
+  <tr><th>Hesap var mı?</th><td><b>Hayır</b></td></tr>
+  <tr><th>Veri satıyor veya paylaşıyor musunuz?</th><td><b>Hayır</b></td></tr>
+</table>
+
+<h2>Cihazınızda ne saklanıyor</h2>
+<p>İkisi de tarayıcının kendi <code>chrome.storage</code> API'sini kullanır,
+hiçbir yere gönderilmez:</p>
+<table>
+  <tr><th><code>chrome.storage.local</code></th>
+      <td>Ayarlarınız (hangi temizlik grupları açık, hangi strateji),
+          element seçiciyle eklediğiniz kurallar ve ayar sayfasındaki
+          14 günlük istatistik geçmişi.</td></tr>
+  <tr><th><code>chrome.storage.session</code></th>
+      <td>Tarayıcı oturumunun sayaçları. Tarayıcıyı kapattığınızda
+          temizlenir.</td></tr>
+</table>
+<p>Her şeyi silmek için ayar sayfasındaki <b>Sayaçları sıfırla</b> düğmesini
+kullanabilir ya da eklentiyi kaldırabilirsiniz.</p>
+
+<h2>İzinler ve gerekçeleri</h2>
+<table>
+  <tr><th><code>declarativeNetRequest</code></th>
+      <td>Reklam sunucularına giden istekleri tarayıcıdan çıkmadan durdurur.
+          Manifest V3'ün desteklediği ağ engelleme yöntemidir.</td></tr>
+  <tr><th><code>storage</code></th>
+      <td>Ayarları ve sayaçları yerel olarak saklar.</td></tr>
+  <tr><th><code>scripting</code></th>
+      <td>Yalnızca siz istediğinizde: "Bu öğeyi engelle" seçici ve Tanılama
+          aracının açık sekmeyi taraması.</td></tr>
+  <tr><th><code>contextMenus</code></th>
+      <td>Sağ tık menüsüne tek bir kalem ekler.</td></tr>
+  <tr><th><code>*.youtube.com</code>, <code>*.youtube-nocookie.com</code></th>
+      <td>Kodun çalıştığı tek yer. Gizli gömülü videolar da bu ikinci
+          alan adını kullanır, o yüzden ikisi de gerekir.</td></tr>
+  <tr><th><code>*.googlevideo.com</code></th>
+      <td>YouTube'un video CDN'i. Sunucu tarafı eklenen reklam
+          segmentleri, video ile aynı adresten istendiği için
+          ayırt edilebilmesi gerekir.</td></tr>
+</table>
+
+<h2>Engellenen ama izin istenmeyen adresler</h2>
+<p>Aşağıdaki reklam sunucularına yapılan istekler tarayıcıdan hiç çıkmaz.
+Bunun için <em>ayrıca izin istemiyoruz</em>: ağ kuralları motor tarafında
+çalışır ve yalnızca eşleşen adresleri durdurur — sayfaları okunmaz,
+içerikleri değiştirilmez:</p>
+<table>
+  <tr><th><code>*.doubleclick.net</code>,
+          <code>*.googlesyndication.com</code>,
+          <code>*.googleadservices.com</code>,
+          <code>*.2mdn.net</code></th>
+      <td>Google reklam altyapısı. Bu dört adrese yapılan istekler
+          engellenir.</td></tr>
+</table>
+<p>Daha önceki sürümlerde <code>googleadservices.com</code> ve
+<code>2mdn.net</code> için izin isteniyordu. Bu gereksizdi; ağ kuralları
+izin olmadan da çalıştığı için kaldırıldı. Engelleme davranışı değişmedi.</p>
+
+<h2>Ağda ne yapıyoruz</h2>
+<ul>
+  <li>Yukarıdaki reklam sunucularına yapılan istekler — bunlar
+      <b>gönderilmez</b>, engellenir.</li>
+  <li>Zaten ziyaret ettiğiniz sayfalara yapılan istekler.</li>
+  <li>Tanılama aracında <b>Testi çalıştır</b>'a bastığınızda, kuralların
+      çalıştığını kanıtlamak için birkaç istek. Bunlar da yine sizin zaten
+      ulaştığınız üçüncü taraflara gider, bize hiçbir şey gitmez.</li>
+</ul>
+<p>Geliştiriciye ait hiçbir uç nokta yoktur.</p>
+
+<h2>Çocuklar</h2>
+<p>Eklenti çocuklara yönelik değildir ve kimden olursa olsun veri toplamaz.</p>
+
+<h2>Geliştirici ve iletişim</h2>
+<table>
+  <tr><th>Geliştirici</th><td>Ferhat Doğan</td></tr>
+  <tr><th>E-posta</th>
+      <td><a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a></td></tr>
+  <tr><th>Web sitesi</th>
+      <td><a href="https://266hosting.com">https://266hosting.com</a></td></tr>
+  <tr><th>Telif</th>
+      <td>&copy; 2026 Ferhat Doğan — FD Reklam Engelleyici. Tüm hakları saklıdır.</td></tr>
+</table>
+<p>Bu politikayla ilgili sorularınız için yukarıdaki adrese yazabilirsiniz. Eklenti
+veri toplamadığı için, talepleriniz çoğunlukla doğrudan kendi tarayıcınızda
+çözülebilir: ayar sayfasındaki <b>Sayaçları sıfırla</b> ve <b>Geçmişi temizle</b>
+düğmeleri tüm kayıtları siler.</p>
+
+<h2>Bu politikanın değişmesi</h2>
+<p>Değişirse bu sayfada yayımlanır ve yukarıdaki tarih güncellenir. Veri
+toplamadığımız için böyle bir değişikliğin etkileyebileceği veri yoktur.</p>
+
+<footer>
+  <p>FD Reklam Engelleyici &copy; 2026 Ferhat Doğan — Tüm hakları saklıdır.</p>
+  <p>
+    <a href="https://266hosting.com">266hosting</a> &middot;
+    <a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a>
+  </p>
+</footer>
+
+</div>
+</body>
+</html>

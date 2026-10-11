@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — FD Reklam Engelleyici</title>
+<meta name="description" content="FD Reklam Engelleyici collects no data and sends nothing. Full privacy policy.">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --fg:#0f172a; --muted:#64748b;
+    --line:#e2e8f0; --accent:#16a34a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0b1220; --card:#0f172a; --fg:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#22c55e; }
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:44px 20px 80px;
+    font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--fg);
+  }
+  .wrap { max-width:760px; margin:0 auto; }
+  header { border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:28px; }
+  h1 { margin:0 0 6px; font-size:26px; letter-spacing:-.02em; }
+  .meta { margin:0; color:var(--muted); font-size:14px; }
+  h2 { margin:32px 0 8px; font-size:18px; }
+  p, li { font-size:15.5px; }
+  ul { padding-left:22px; }
+  li { margin-bottom:7px; }
+  .big {
+    border:1px solid var(--accent); border-radius:12px;
+    background:rgba(22,163,74,.08); padding:16px 18px; margin:22px 0;
+  }
+  .big strong { display:block; font-size:17px; margin-bottom:4px; }
+  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-weight:600; color:var(--muted); }
+  code { background:rgba(127,127,127,.16); padding:1px 5px; border-radius:4px; font-size:13.5px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin:18px 0; }
+  footer { margin-top:44px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Privacy Policy</h1>
+  <p class="meta">FD Reklam Engelleyici · Last updated: October 2026</p>
+</header>
+
+<div class="big">
+  <strong>We collect nothing. We send nothing.</strong>
+  This extension has no server, no analytics, no telemetry, and no remote
+  configuration. All analysis runs on your device.
+</div>
+
+<h2>Summary</h2>
+<table>
+  <tr><th>Do you collect user data?</th><td><strong>No.</strong></td></tr>
+  <tr><th>Do you transmit anything off-device?</th><td><strong>No.</strong></td></tr>
+  <tr><th>Do you use third-party analytics?</th><td><strong>No.</strong></td></tr>
+  <tr><th>Is there an account?</th><td><strong>No.</strong></td></tr>
+  <tr><th>Do you sell or share data?</th><td><strong>No.</strong></td></tr>
+</table>
+
+<h2>What is stored on your device</h2>
+<p>Two kinds of local storage are used, both via the browser's own
+<code>chrome.storage</code> API. Neither is transmitted anywhere:</p>
+<table>
+  <tr><th><code>chrome.storage.local</code></th>
+      <td>Your settings (which cleanup groups are on, which blocking strategy
+          to use), any CSS rules you created with the element picker, and the
+          14-day blocking statistics shown on the Settings page.</td></tr>
+  <tr><th><code>chrome.storage.session</code></th>
+      <td>Temporary counters for the current browser session. This is cleared
+          by the browser when you close it and is not written to disk in a
+          persistent way.</td></tr>
+</table>
+<p>You can erase everything by using the "Reset counters" button on the
+Settings page, or by uninstalling the extension.</p>
+
+<h2>Permissions, and why each is requested</h2>
+<table>
+  <tr><th><code>declarativeNetRequest</code></th>
+      <td>Blocks requests to advertising hosts before they leave the browser.
+          This is the network-blocking API supported by Manifest V3.</td></tr>
+  <tr><th><code>storage</code></th>
+      <td>Stores your settings and counters locally.</td></tr>
+  <tr><th><code>scripting</code></th>
+      <td>Used only when you explicitly ask for it: the "Block this element"
+          picker, and the Diagnostics tool scanning the YouTube tab you are
+          currently viewing.</td></tr>
+  <tr><th><code>contextMenus</code></th>
+      <td>Adds one right-click entry, "Block this element".</td></tr>
+  <tr><th><code>*.youtube.com</code>, <code>*.youtube-nocookie.com</code></th>
+      <td>The only origins where the extension's code runs. Privacy-enhanced
+          embeds use the second domain, which is why both are needed.</td></tr>
+  <tr><th><code>*.googlevideo.com</code></th>
+      <td>YouTube's video CDN. Server-side inserted ad segments arrive from
+          the same host as the video itself, so that host has to be
+          distinguishable.</td></tr>
+</table>
+
+<h2>Hosts blocked without requesting access</h2>
+<p>Requests to the servers below never leave your browser. The extension does
+<em>not</em> request permission for them: the network rules run in the browser
+engine and only drop requests whose address matches. Pages on those hosts are
+not read and their contents are not modified.</p>
+<table>
+  <tr><th><code>*.doubleclick.net</code>, <code>*.googlesyndication.com</code>,
+          <code>*.googleadservices.com</code>, <code>*.2mdn.net</code></th>
+      <td>Google's advertising infrastructure. Requests to these four hosts
+          are blocked.</td></tr>
+</table>
+<p>Earlier versions requested permission for <code>googleadservices.com</code>
+and <code>2mdn.net</code> as well. That was unnecessary — network rules work
+without those permissions — so they were removed. Blocking behaviour did not
+change.</p>
+
+<h2>What the extension does on the network</h2>
+<p>The only network requests it makes are:</p>
+<ul>
+  <li>Requests to the advertising hosts listed above — these are
+      <em>blocked</em>, not sent.</li>
+  <li>Requests to pages you already visit (YouTube), which your browser would
+      make anyway.</li>
+  <li>When you press "Run test" in the Diagnostics tool, a handful of requests
+      to advertising and YouTube addresses, to prove the rules are firing.
+      These go to the same third parties you already contact and are never
+      sent to us.</li>
+</ul>
+<p>There is no endpoint belonging to the developer. If you watch the Network
+tab, you will see no request originating from this extension other than those.</p>
+
+<h2>Children</h2>
+<p>The extension is not directed at children and collects no data from anyone,
+including children.</p>
+
+<h2>Developer and contact</h2>
+<table>
+  <tr><th>Developer</th><td>Ferhat Doğan</td></tr>
+  <tr><th>Email</th>
+      <td><a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a></td></tr>
+  <tr><th>Website</th>
+      <td><a href="https://266hosting.com">https://266hosting.com</a></td></tr>
+  <tr><th>Copyright</th>
+      <td>&copy; 2026 Ferhat Doğan — FD Reklam Engelleyici. All rights reserved.</td></tr>
+</table>
+<p>For questions about this policy, write to the email address above. Because we
+collect nothing, most requests are resolved directly in your browser: the
+<strong>Reset counters</strong> and <strong>Clear history</strong> buttons on the
+options page delete everything this extension has stored.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this policy ever changes, the updated version will be published on this
+page and the date above will change. Because we collect nothing, there is no
+data that could be affected by such a change.</p>
+
+<footer>
+  <p>FD Reklam Engelleyici &copy; 2026 Ferhat Doğan. All rights reserved.</p>
+  <p>
+    <a href="https://266hosting.com">266hosting</a> &middot;
+    <a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a> &middot;
+    <a href="support.html">Support</a>
+  </p>
+</footer>
+
+</div>
+</body>
+</html>

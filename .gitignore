@@ -1,0 +1,17 @@
+# Chrome, paketi yuklerken urettigi klasoru ekler
+_metadata/
+
+# paketleme ciktisi
+*.zip
+
+# bagimliliklar (bu proje harici modul kullanmiyor, ama yine de)
+node_modules/
+
+# isletim sistemi
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+*.swp

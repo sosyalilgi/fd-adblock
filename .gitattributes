@@ -1,0 +1,9 @@
+# satir sonlari: depo tarafindan daima LF
+# Windows'ta CRLF'e donusmesi, DNR regexFilter ve JSON dosyalarini bozabilir
+* text=auto eol=lf
+
+# ikili dosyalar - satir sonu onlari gecerli degil
+*.png binary
+*.zip binary
+*.jpg binary
+*.ico binary

@@ -1,0 +1,45 @@
+{
+  "_aciklama": "BU LISTEDEKİ ADRESLER HİÇBİR ZAMAN ENGELLENMEMELİDİR. tools/validate.js her DNR kuralını bu adreslere karşı dener. Regresyonda #11 kuralı normal bir video isteğindeki ctier= parametresi eşleşince videoyu kesmişti; bu liste onu yakalamak için var.",
+  "adresler": [
+    {
+      "ad": "Normal video akışı (Shorts dahil)",
+      "url": "https://rr1---sn-u0g3jxaa-n5fs.googlevideo.com/videoplayback?expire=1791742566&ei=Bn7L&ip=1.2.3.4&id=o-ALolC_tv3YM&source=youtube&requiressl=yes&xpc=EgV&cps=650&met=1&mh=m4&mm=18&mn=sn-x&ms=aub&mv=m&mvi=1&pl=21&rms=au&ctier=SH&initcwndbps=2262625&siu=1&sabr=1&cver=2.20261009.01.00&rn=1",
+      "neden": "ctier videonun CDN yönlendirme parametresidir, reklam göstergesi değildir"
+    },
+    {
+      "ad": "Normal video akışı (başka CDN)",
+      "url": "https://rr3---sn-nv47lnsy.googlevideo.com/videoplayback?expire=1&ei=x&ip=1.1.1.1&id=y&source=youtube&requiressl=yes&mh=m4&mm=18&mv=m&mvi=1&pl=21&ctier=SH&sabr=1&rn=2",
+      "neden": "aynı parametre farklı CDN'de"
+    },
+    {
+      "ad": "Video CDN — manifest",
+      "url": "https://www.youtube.com/api/manifest/hls_playlist/expire/1/manifest.m3u8",
+      "neden": "oynatma için zorunlu"
+    },
+    {
+      "ad": "Ana oynatıcı API",
+      "url": "https://www.youtube.com/youtubei/v1/player",
+      "neden": "reklam verisi buradan gelir; istek engellenirse oynatma başlamaz"
+    },
+    {
+      "ad": "Shorts akışı",
+      "url": "https://www.youtube.com/youtubei/v1/reel/reel_watch_sequence",
+      "neden": "Shorts oynatıcısı bunu kullanır"
+    },
+    {
+      "ad": "Ana sayfa / gezinme",
+      "url": "https://www.youtube.com/youtubei/v1/browse",
+      "neden": "sayfa açılır"
+    },
+    {
+      "ad": "Oynatıcı betikleri",
+      "url": "https://www.youtube.com/s/player/abc123/player_ias.vflset/tr_TR/base.js",
+      "neden": "oynatıcı kodları; engellenirse hiçbir şey çalışmaz"
+    },
+    {
+      "ad": "Video küçük resimleri",
+      "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+      "neden": "arayüz görseli"
+    }
+  ]
+}

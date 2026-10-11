@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FD Reklam Engelleyici — Ayarlar</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="../../icons/icon128.png" alt="" width="52" height="52">
+      <div>
+        <h1>FD Reklam Engelleyici</h1>
+        <p class="ver" id="version">Sürüm —</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="row master">
+        <div>
+          <strong>Koruma</strong>
+          <p class="desc">Tüm katmanları (ağ, veri budama, kozmetik) tek anahtardan açar/kapatır.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="master">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <h2>Tespit karşıtı stratejisi</h2>
+    <p class="lede">YouTube, gerçek bir tarayıcıda oynatıcı yanıtında <code>adPlacements</code>
+    alanının <em>daima bulunduğunu</em> bekler. Alanın tamamen kaybolması "cevap kurcalandı"
+    sinyali verebilir. İki yaklaşımı test edebilirsin.</p>
+
+    <div class="card">
+      <label class="radio">
+        <input type="radio" name="strategy" value="delete">
+        <span>
+          <strong>Alanları sil</strong> <em class="tag tag-ok">önerilen</em>
+          <span class="sub">Reklam verisi tamamen kaldırılır. En az veri bırakır, en verimli.</span>
+        </span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="strategy" value="spoof">
+        <span>
+          <strong>Alanları boşalt</strong> <em class="tag">riskli</em>
+          <span class="sub">Alan yerinde kalır ama boş diziye çevrilir. Tespit ihtimalini
+          azaltır; bazı oynatıcı sürümlerinde oynatmayı bozabilir.</span>
+        </span>
+      </label>
+    </div>
+
+    <h2>Algılama karşıtı</h2>
+    <p class="lede">
+      YouTube, eklenti varlığını fark ederse "reklam engelleyici bulundu" penceresi
+      gösterebilir. Bu seçenek o pencereyi bastırmaya çalışır.
+      <strong>Varsayılan olarak kapalıdır</strong> — ne yaptığımızı saklamak yerine
+      açıkça seçeneğe sunuyoruz.
+    </p>
+
+    <div class="card">
+      <div class="row master">
+        <div>
+          <strong>Algılama karşıtı</strong>
+          <p class="desc" id="antiDesc">Kapalı. YouTube uyarı penceresi gösterebilir;
+          bu normaldir ve sayfayı bozmaz.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="antidetect">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="dim" style="margin:0 0 14px">
+        Uyarı: Bu ayarı değiştirdikten sonra <strong>sayfayı yeniden yüklemen gerekir</strong>.
+        Yüklü bir sayfadan kapatmak güvenilir değil.
+      </p>
+    </div>
+
+    <h2>Kozmetik temizlik</h2>
+    <p class="lede">Hangi öğelerin gizleneceğini sen belirle. Kapalı olan özellikler sayfada görünür kalır.</p>
+
+    <div id="groups" class="card list"></div>
+
+    <section class="card">
+      <h3 class="card-title">Sayaçlar</h3>
+      <div class="counters">
+        <div><span class="num" id="c-ads">0</span><span class="lbl">Reklam engellendi</span></div>
+        <div><span class="num" id="c-req">0</span><span class="lbl">Ağdan engellendi</span></div>
+      </div>
+      <button id="reset" class="btn" type="button">Sayaçları sıfırla</button>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title">Son 14 gün</h3>
+      <div id="chart" class="chart"></div>
+      <div class="chart-legend">
+        <span><i class="sw sw-ads"></i>reklam</span>
+        <span><i class="sw sw-req"></i>API isteği</span>
+        <span id="chartTotal" class="dim"></span>
+      </div>
+      <button id="clearHistory" class="btn" type="button" style="margin-top:12px">
+        Geçmişi temizle
+      </button>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title">Kendi kuralların</h3>
+      <p class="desc" style="margin-bottom:12px">
+        YouTube sayfasında bir öğeye <strong>sağ tık → FD: Bu öğeyi engelle</strong>
+        diyerek kalıcı olarak gizleyebilirsin.
+      </p>
+      <div id="userRules" class="rules"></div>
+      <div id="userEmpty" class="dim">Henüz kural yok.</div>
+      <button id="clearRules" class="btn" type="button" style="margin-top:12px;display:none">
+        Tümünü sil
+      </button>
+    </section>
+
+    <section class="card about">
+      <h3 class="card-title">Tanılama</h3>
+      <p class="lede" style="margin-bottom:12px">Aktif YouTube sekmesini tarar: hangi katman
+      çalışıyor, hangi reklamlar sızdı, tespit riski var mı — raporlar.</p>
+      <button id="openDiag" class="btn" type="button">Tanılama sayfasını aç</button>
+
+      <h3 class="card-title" style="margin-top:24px">Nasıl çalışır?</h3>
+      <ol>
+        <li><strong>Ağ katmanı</strong> — reklam sunucularına giden istekler tarayıcı motoru seviyesinde durdurulur.</li>
+        <li><strong>Veri budama</strong> — oynatıcı sayfayı okumadan önce YouTube'un JSON verisinden reklam alanları silinir.</li>
+        <li><strong>Kozmetik filtreler</strong> — yukarıdaki listeden seçtiğin öğeler gizlenir.</li>
+        <li><strong>Oynatıcı</strong> — sızan reklamlar otomatik atlanır veya 16x hızlandırılır.</li>
+      </ol>
+      <p class="warn"><strong>Sınır:</strong> YouTube bazı reklamları doğrudan video
+      akışına gömer (sunucu tarafı ekleme). Hiçbir eklenti bunları engelleyemez.</p>
+    </section>
+
+    <section class="card about owner">
+      <h3 class="card-title">Sahiplik ve iletişim</h3>
+      <p class="desc">
+        <strong>FD Reklam Engelleyici</strong> — Ferhat Doğan tarafından geliştirildir.
+        Açık kaynaklı, reklamsız ve ücretsizdir.
+      </p>
+      <dl class="ownerlist">
+        <dt>Geliştirici</dt>
+        <dd>Ferhat Doğan</dd>
+        <dt>E-posta</dt>
+        <dd><a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a></dd>
+        <dt>Web sitesi</dt>
+        <dd><a href="https://266hosting.com" target="_blank" rel="noopener noreferrer">https://266hosting.com</a></dd>
+        <dt>Sürüm</dt>
+        <dd><span id="ownerVersion">—</span></dd>
+      </dl>
+      <p class="dim" style="margin:12px 0 0;font-size:12.5px">
+        Sorun bildirmek için e-posta adresine yazabilirsin. Tanılama sayfasındaki
+        <b>Raporu kopyala</b> düğmesi, sorunu tek mesajda anlatman için en hızlı yoldur.
+      </p>
+    </section>
+
+    <footer class="foot">
+      <p class="copyright">&copy; 2026 Ferhat Doğan — FD Reklam Engelleyici. Tüm hakları saklıdır.</p>
+      <p class="footlinks">
+        <a href="../privacy.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
+        <span class="sep">·</span>
+        <a href="https://266hosting.com" target="_blank" rel="noopener noreferrer">266hosting</a>
+        <span class="sep">·</span>
+        <a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a>
+      </p>
+      <p class="dim">Bu eklenti hiçbir veri toplamaz, hiçbir şey göndermez.</p>
+    </footer>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

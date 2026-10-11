@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FD Reklam Engelleyici</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="head">
+    <img src="../../icons/icon48.png" alt="" width="28" height="28">
+    <h1>FD Reklam Engelleyici</h1>
+  </header>
+
+  <button id="toggle" class="toggle" type="button" aria-pressed="false">
+    <span class="toggle-state">Yükleniyor…</span>
+  </button>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num" id="count-ads">0</span>
+      <span class="label">Reklam engellendi</span>
+    </div>
+    <div class="stat">
+      <span class="num" id="count-requests">0</span>
+      <span class="label">Ağdan engellendi</span>
+    </div>
+  </div>
+
+  <p class="note">Sayaçlar tarayıcı kapanana kadar sıfırlanmaz.</p>
+
+  <footer>
+    <button id="reset" class="link" type="button">Sayaçları sıfırla</button>
+    <span class="dot">·</span>
+    <button id="options" class="link" type="button">Temizlik seçenekleri</button>
+    <span class="dot">·</span>
+    <button id="diag" class="link" type="button">Tanılama</button>
+  </footer>
+
+  <p class="credit">
+    &copy; 2026 Ferhat Doğan · Tüm hakları saklıdır<br>
+    <a href="https://266hosting.com" target="_blank" rel="noopener noreferrer">266hosting</a>
+  </p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

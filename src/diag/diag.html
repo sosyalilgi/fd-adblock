@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FD Reklam Engelleyici — Tanılama</title>
+  <link rel="stylesheet" href="diag.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="../../icons/icon128.png" alt="" width="48" height="48">
+      <div>
+        <h1>Tanılama</h1>
+        <p class="sub">Açık olan YouTube sekmelerini canlı olarak inceler.</p>
+        <p class="stamp" id="stamp">yükleniyor…</p>
+      </div>
+      <div class="actions">
+        <button id="run" class="btn primary">Tara</button>
+        <button id="copy" class="btn">Raporu kopyala</button>
+      </div>
+    </header>
+
+    <section class="card tabs">
+      <h2>YouTube sekmeleri</h2>
+      <div id="tablist"></div>
+      <p id="tabempty" class="dim" style="margin:10px 0 0;display:none">
+        Açık bir YouTube sekmesi yok. Aşağıya adresi yapıştırıp açabilirsin.
+      </p>
+      <div class="urlbar">
+        <input id="urlInput" type="text" spellcheck="false"
+               placeholder="https://www.youtube.com/embed/VIDEO_ID">
+        <button id="urlOpen" class="btn" type="button">Sekme aç</button>
+      </div>
+      <p class="dim" style="margin:8px 0 0;font-size:12px">
+        Gömülü video için: videonun paylaş penceresindeki
+        <b>Embed → HTML kodunu</b> kopyala, <code>/embed/</code> kısmını buraya yapıştır.
+      </p>
+    </section>
+
+    <div id="verdict" class="verdict">Yukarıdan bir sekme seçip <strong>Tara</strong>'ya basın.</div>
+
+    <section class="card netcard">
+      <h2>Ağ katmanı testi</h2>
+      <p class="netlede">
+        DNR kurallarının gerçekten çalışıp çalışmadığını kanıtlar. Kuralları geçici olarak
+        kapatıp aynı adreslere iki kez istek atar ve sonucu karşılaştırır.
+        <strong>Sayfanı yeniden yüklemez.</strong>
+      </p>
+      <div class="netrow">
+        <span id="netState" class="netstate">kurallar: bilinmiyor</span>
+        <button id="netToggle" class="btn" type="button">Kuralları kapat</button>
+        <button id="netTest" class="btn primary" type="button">Testi çalıştır</button>
+      </div>
+      <div id="netResult"></div>
+      <details id="rulesBox" class="rulesbox"></details>
+    </section>
+
+    <div id="out"></div>
+
+    <footer class="foot">
+      <p>Bu sayfa hiçbir veri dışarı göndermez. Her şey bu bilgisayarda hesaplanır.</p>
+      <p class="owner">
+        <strong>FD Reklam Engelleyici</strong> &copy; 2026 Ferhat Doğan — Tüm hakları saklıdır.
+      </p>
+      <p class="footlinks">
+        <a href="../privacy.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
+        <span class="sep">&middot;</span>
+        <a href="https://266hosting.com" target="_blank" rel="noopener noreferrer">266hosting</a>
+        <span class="sep">&middot;</span>
+        <a href="mailto:ferhatdogan55@gmail.com">ferhatdogan55@gmail.com</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="net-verdict.js"></script>
+  <script src="diag.js"></script>
+</body>
+</html>
