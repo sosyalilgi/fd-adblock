@@ -99,9 +99,26 @@ console.log('\n6) Yayınlanan sayfalar (docs/) güncel mi?');
 
 console.log('\n7) Paket sürümü zip adıyla uyuşuyor mu?');
 {
+  /* Bu kontrol YERELDE anlamlı ama CI'da gecersizdir:
+     zip dosyasi .gitignore'dadir, depoda bulunmaz. GitHub Actions
+     depoyu klonlar, zip orada yoktur — kontrol her zaman basarisiz
+     olur ve tum CI'yi kirmiziya boyardi.
+
+     Bu yuzden: paketin varligi ancak yerelde zorunlu, depoda
+     degil. Varsa adi tutarli olmali; yoksa dokunulmaz. */
   const zipAd = path.join(path.dirname(KOK), 'fd-adblock-' + surum + '.zip');
-  check('doğru adlı paket var: fd-adblock-' + surum + '.zip',
-    fs.existsSync(zipAd), zipAd);
+  const varMi = fs.existsSync(zipAd);
+
+  if (varMi) {
+    check('paket adi surumle uyusuyor: fd-adblock-' + surum + '.zip', true);
+  } else if (process.env.CI) {
+    // CI: paket depoda tutulmaz (build sonrasi üretilir). Sessiz geç,
+    // ama gerekçeyi yaz ki "noksan" gibi görünmesin.
+    check("CI ortami: paket .gitignore'da, burada beklenmiyor", true);
+  } else {
+    check('paket bulunamadı — önce `node tools/package.js` çalıştır',
+      false, zipAd);
+  }
 }
 
 console.log('\n==============================');
