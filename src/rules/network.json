@@ -122,7 +122,7 @@
       "type": "block"
     },
     "condition": {
-      "regexFilter": "^https?://[^/]*\\.googlesyndication\\.com/pagead/",
+      "regexFilter": "^https?://([a-z0-9-]+\\.)?googlesyndication\\.com/",
       "resourceTypes": [
         "script",
         "xmlhttprequest",

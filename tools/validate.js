@@ -215,6 +215,134 @@ if (ihlal === 0) {
   console.log('  ' + (neverBlock.adresler || []).length + ' korumali adresin hepsi gecti');
 }
 
+/* =====================================================================
+   Ters denetim: MUST-BLOCK
+   ---------------------------------------------------------------------
+   Yukarıdaki liste "yanlışlıkla engellenmemeli" diyor. Bu bölüm
+   tersini kontrol eder: "yanlışlıkla GEÇMEMELİ".
+
+   İkisi de sessiz hatalardır ve ikisi de oldu:
+     • #11 kuralı ctier parametresine takılıp videoyu kesti
+     • googlesyndication kuralı yalnızca /pagead/ yolunu kapattı;
+       /ddm/activity_ext ve /activeview_ext SIZDI. A/B testi
+       "6 kural kanıtlandı" dedi, çünkü kural başına tek adres
+       deniyordu ve o adres /pagead/ yolundaydı.
+   ===================================================================== */
+console.log('\n=== zorunlu engelleme (ters denetim) ===\n');
+
+const mustBlockPath = path.join(__dirname, '..', 'src', 'rules', 'must-block.json');
+let mustBlock = { adresler: [] };
+try {
+  mustBlock = JSON.parse(fs.readFileSync(mustBlockPath, 'utf8'));
+} catch (e) {
+  err('must-block.json okunamadi: ' + e.message);
+}
+
+let kacis = 0;
+(mustBlock.adresler || []).forEach((girdi) => {
+  const vuranlar = [];
+  // Her adres birden çok başlatıcı altında denenir: kural initiatorDomains
+  // koşulu taşıyor olabilir, test onu da zorlamalı.
+  baslaticilar.forEach((b) => {
+    rules.forEach((r) => {
+      if (kuralIskir(r, girdi.url, b)) vuranlar.push('#' + r.id);
+    });
+  });
+  const tekillestir = [...new Set(vuranlar)];
+  if (!tekillestir.length) {
+    kacis++;
+    err('"' + girdi.ad + '" KACIYOR — hicbir kural engellemiyor');
+    console.log('      adres: ' + girdi.url.slice(0, 78));
+    console.log('      neden: ' + (girdi.neden || ''));
+  } else {
+    ok('"' + girdi.ad + '" engelleniyor -> ' + tekillestir.join(', '));
+  }
+});
+
+if (kacis === 0) {
+  console.log('  ' + (mustBlock.adresler || []).length + ' zorunlu adresin hepsi engelleniyor');
+}
+
+/* ALAN ADI kuralı dar mı?
+   Gerçek hata şu sınıftaydı: "googlesyndication" bir ALAN ADI
+   kuralıydı ama yalnızca /pagead/ yolunu kaplıyordu. Aynı alan
+   adının diğer yolları sızdı.
+
+   YÖNTEM kuralı değil ALAN ADINI gruplar: aynı hosta ait zorunlu
+   adresler arasında, bir kural bazılarını yakalayıp bazılarını
+   kaçırıyorsa o kural bu host için eksiktir.
+
+   /api/stats/ads gibi yol kısıtlı kurallar gürültü üretmez çünkü
+   onların amacı zaten tek bir yoldur. */
+console.log('\n=== alan adı kuralı genişliği ===\n');
+
+function hostAl(url) {
+  const m = String(url).match(/^https?:\/\/([^/]+)/i);
+  return m ? m[1].toLowerCase() : '';
+}
+
+const hostGruplari = new Map();
+(mustBlock.adresler || []).forEach((g) => {
+  const h = hostAl(g.url);
+  if (!h) return;
+  if (!hostGruplari.has(h)) hostGruplari.set(h, []);
+  hostGruplari.get(h).push(g);
+});
+
+/* Denetim YALNIZCA tamamen reklam sunucusu olan host'lara uygulanır.
+
+   Neden ayrım şart: youtube.com da reklam uçları barındırır ama
+   aynı host'ta video, gezinme ve oynatıcı da var. Orada reklamı
+   /pagead/ ve /api/stats/ads gibi yol kurallarıyla engellemek
+   DOĞRUDUR; tek bir host kuralıyla kapatmak yanlış olurdu.
+   Bu denetim böyle bir kuralı "eksik" diye ağdalardı.
+
+   Ayırt edici: never-block.json "asla tamamen engellenmesin" diyen
+   host'ları zaten listeliyor. Denetim, o listede OLMAYAN host'lar
+   içindeki kısıtlı kapsamı arar — onlar tamamen reklam sunucusudur. */
+const aslaTamEngellenmez = new Set(
+  (neverBlock.adresler || [])
+    .map((g) => hostAl(g.url))
+    .filter(Boolean)
+);
+
+let darKural = 0;
+hostGruplari.forEach((girdiler, host) => {
+  if (girdiler.length < 2) return;               // tek adres = anlamlı değil
+  if (aslaTamEngellenmez.has(host)) {
+    // youtube.com gibi: yol kurallarıyla kısmen engellemek DOĞRU
+    const kapsayan = rules.filter((r) => girdiler.some((g) =>
+      baslaticilar.some((b) => kuralIskir(r, g.url, b))));
+    if (kapsayan.length) ok(host + ' reklam uçları yol kurallarıyla engelleniyor (' +
+      [...new Set(kapsayan.map((r) => '#' + r.id))].join(', ') + ')');
+    return;
+  }
+
+  // Bu hosta ait adreslerin hepsini yakalayan kurallar
+  const tamKaplayan = rules.filter((r) => girdiler.every((g) =>
+    baslaticilar.some((b) => kuralIskir(r, g.url, b))));
+
+  if (tamKaplayan.length) return;                // en az bir kural yeterli
+
+  // Hiçbiri tam kapsamıyor → eksik kural var
+  darKural++;
+  const kisisan = rules.filter((r) => girdiler.some((g) =>
+    baslaticilar.some((b) => kuralIskir(r, g.url, b))));
+
+  if (kisisan.length) {
+    warn(host + ': hiçbir kural ' + girdiler.length +
+      ' adresin hepsini kapsamıyor. Kısmen eşleşen: ' +
+      [...new Set(kisisan.map((r) => '#' + r.id))].join(', ') +
+      ' — engellenmeyenler: ' + girdiler
+        .filter((g) => !kisisan.some((r) => baslaticilar.some((b) => kuralIskir(r, g.url, b))))
+        .map((g) => '"' + g.ad + '"').join(', '));
+  } else {
+    warn(host + ': bu hosta ait ' + girdiler.length + ' zorunlu adresin hiçbiri engellenmiyor');
+  }
+});
+
+if (darKural === 0) ok('Her reklam sunucusu kuralı kendi hostunun tüm yollarını kapsıyor');
+
 /* ---- istatistik ---- */
 const byAction = {};
 rules.forEach((r) => { byAction[r.action.type] = (byAction[r.action.type] || 0) + 1; });

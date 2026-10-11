@@ -1,0 +1,86 @@
+{
+  "_aciklama": "BU LISTEDEKİ ADRESLER MUTLAKA ENGELLENMELİDİR. tools/validate.js her DNR kuralını bu adreslere karşı dener ve BİR TANE bile kaçarsa hata verir.",
+  "_neden_var": "Ters hata sınıfıdır. never-block.json 'yanlışlıkla engellenen' adresleri korur; bu dosya 'yanlışlıkla GEÇEN' adresleri korur. İkisi de sessizdir. İki kez oldu: (1) kural #11 ctier parametresine takılıp VİDEOYU kesti, (2) googlesyndication kuralı yalnızca /pagead/ yolunu kapatıyordu, /ddm/activity_ext ve /activeview_ext SIZIYORDU. İkincisinde A/B testi '6 kural kanıtlandı' dedi çünkü kural başına tek adres deniyordu ve o adres /pagead/ yolundaydı.",
+  "adresler": [
+    {
+      "ad": "googlesyndication — sayfa reklam yükleyici",
+      "url": "https://pagead2.googlesyndication.com/pagead/render_ads.html",
+      "neden": "Google reklam altyapısı; alan adının tamamı reklam sunucusudur"
+    },
+    {
+      "ad": "googlesyndication — ddm aktivite (SIZDI)",
+      "url": "https://ade.googlesyndication.com/ddm/activity_ext/dc_pubid=2;dc_exteid=426629785853269695",
+      "neden": "2026-10-11'de sızdı: kural yalnızca /pagead/ yolunu kapatıyordu"
+    },
+    {
+      "ad": "googlesyndication — activeview (SIZDI)",
+      "url": "https://pagead2.googlesyndication.com/activeview_ext?id=lidarv&dc_pubid=2&dc_exteid=426629",
+      "neden": "2026-10-11'de sızdı: reklam görüntülenme ölçümü, gerçek ağ trafiği"
+    },
+    {
+      "ad": "googlesyndication — sodar çerçeve (SIZDI)",
+      "url": "https://tpc.googlesyndication.com/sodar/5k7CCto5.html",
+      "neden": "2026-10-11'de sızdı: 8408 bayt gerçek transfer"
+    },
+    {
+      "ad": "googlesyndication — kök alan adı",
+      "url": "https://googlesyndication.com/pagead/render_ads.html",
+      "neden": "alt alan adı olmadan da engellenmeli"
+    },
+    {
+      "ad": "doubleclick — izleme",
+      "url": "https://ad.doubleclick.net/ddm/trackimp/N1405928.279382BIDMANAGER_DFASIT/B25142377.2943000",
+      "neden": "reklam gösterim sayacı; gerçek ağ trafiği"
+    },
+    {
+      "ad": "doubleclick — sayfa",
+      "url": "https://googleads.g.doubleclick.net/pagead/id",
+      "neden": "reklam veri toplama ucu"
+    },
+    {
+      "ad": "YouTube reklam izleme",
+      "url": "https://www.youtube.com/pagead/adview?ai=CEEF3kZ3LavSDBLaL7_UPx9Cz0QXlpY6MigG6kKrKrRawkB8Q",
+      "neden": "reklam görüntülendi sayacı"
+    },
+    {
+      "ad": "YouTube dönüşüm ölçümü",
+      "url": "https://www.youtube.com/pagead/viewthroughconversion/962985656/?backend=innertube&cname=1",
+      "neden": "reklam dönüşümü; gerçek ağ trafiği"
+    },
+    {
+      "ad": "YouTube kullanıcı listesi",
+      "url": "https://www.google.com/pagead/1p-user-list/962985656/?backend=innertube&cname=1&cver=2_2026",
+      "neden": "reklam profilleme"
+    },
+    {
+      "ad": "YouTube ptracking",
+      "url": "https://www.youtube.com/ptracking?html5=1&video_id=6LM_1zVYqcQ&cpn=kaYdIFG_09Tjww4W&ei=kZ3",
+      "neden": "reklam tıklama takibi"
+    },
+    {
+      "ad": "YouTube reklam istatistikleri",
+      "url": "https://www.youtube.com/api/stats/ads?ver=2&ns=1&event=2&device=1&content_v=AGEccpxxYvE&el=detailpage",
+      "neden": "reklam yayın telemetrisi"
+    },
+    {
+      "ad": "googleadservices",
+      "url": "https://www.googleadservices.com/pagead/conversion",
+      "neden": "reklam dönüşümü"
+    },
+    {
+      "ad": "2mdn",
+      "url": "https://static.2mdn.net/ads.js",
+      "neden": "reklam betiği"
+    },
+    {
+      "ad": "doubleclick in-stream durum betiği",
+      "url": "https://static.doubleclick.net/instream/ad_status.js",
+      "neden": "reklam oynatma durumu"
+    },
+    {
+      "ad": "adservice.google.com",
+      "url": "https://adservice.google.com/pagead/ads",
+      "neden": "reklam servisi"
+    }
+  ]
+}

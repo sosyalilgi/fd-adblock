@@ -877,13 +877,29 @@ function netProbe(input) {
   });
 }
 
-// Her adres hangi kuralı sınamak için var
+/* Her adres hangi kuralı sınamak için var.
+ *
+ * ÖNEMLİ: Bir kural için TEK adres denemek yanıltıcıydı. İki kez
+ * oldu: googlesyndication kuralı yalnızca "/pagead/" yolunu
+ * kapatıyordu; "ddm/activity_ext" ve "activeview_ext" SIZIYORDU,
+ * ama tek denenen adres /pagead/ olduğu için test "KURAL ÇALIŞIYOR"
+ * diyordu. Aynı tuzak daha önce ctier kuralında da yaşandı.
+ *
+ * Bu yüzden her kural için FARKLI YOLLARDAN birden fazla adres var.
+ * Yola göre kısıtlı bir kural, kendi satırlarının birinde kırılır. */
 const NET_TEST_URLS = [
   { url: 'https://googleads.g.doubleclick.net/pagead/id', kural: 'googleads.g' },
   { url: 'https://ad.doubleclick.net/', kural: 'doubleclick.net' },
+  { url: 'https://tpc.googlesyndication.com/sodar/5k7CCto5.html', kural: 'googlesyndication' },
+
+  // Aynı kural, FARKLI yollar — yol kısıtı olsaydı burada kırılırdı
   { url: 'https://pagead2.googlesyndication.com/pagead/render_ads.html', kural: 'googlesyndication' },
+  { url: 'https://ade.googlesyndication.com/ddm/activity_ext/dc_pubid=2', kural: 'googlesyndication' },
+  { url: 'https://pagead2.googlesyndication.com/activeview_ext?id=lidarv', kural: 'googlesyndication' },
+
   { url: 'https://www.youtube.com/ptracking?html5=1&fd_test=1', kural: '/ptracking' },
   { url: 'https://www.youtube.com/pagead/fd_test=1', kural: '/pagead/' },
+  { url: 'https://www.youtube.com/pagead/adview?fd_test=1', kural: '/pagead/' },
   { url: 'https://www.youtube.com/api/stats/ads?fd_test=1', kural: '/api/stats/ads' },
   { url: 'https://www.youtube.com/robots.txt', kural: 'KONTROL' }
 ];
