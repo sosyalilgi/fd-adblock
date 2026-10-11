@@ -3,10 +3,10 @@
    Yakalamazsa kontrol ise yoktur. */
 const fs = require('fs');
 const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
-const ROOT = 'C:/Users/ferha/Downloads/opencode-windows-x64/fd-adblock';
-const V = ROOT + '/tools/validate.js';
+const ROOT = path.join(__dirname, '..');
+const V = path.join(ROOT, 'tools', 'validate.js');
 let pass = 0, fail = 0;
 const check = (n, c, x) => {
   if (c) { console.log('  OK   ' + n); pass++; }

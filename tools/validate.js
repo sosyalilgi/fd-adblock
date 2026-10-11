@@ -631,6 +631,40 @@ console.log('\n=== content script kapsamı ===\n');
   });
 }
 
+/* ---- kişisel yol sızıntısı ----
+   Geliştirme sırasında birden çok kez oldu: bir test dosyasına
+   geliştiricinin kendi mutlak yolu yazıldı. Yerelde çalışır
+   (dosya vardır), depoda çalışmaz (yoktur) — CI'da ya hata verir
+   ya, daha kötüsü, VAROLAN YANLIŞ bir dosyayı sessizce çalıştırır. */
+console.log('\n=== kişisel yol sızıntısı ===\n');
+{
+  const kok = path.join(__dirname, '..');
+  const taranan = [];
+  (function walk(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (e.name === 'node_modules' || e.name === '.git' || e.name === '_metadata') continue;
+      const full = path.join(d, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.(js|json|yml|md)$/.test(e.name)) taranan.push(full);
+    }
+  })(kok);
+
+  let sizinti = 0;
+  taranan.forEach((f) => {
+    const icerik = fs.readFileSync(f, 'utf8');
+    const satirlar = icerik.split('\n');
+    const idx = satirlar.findIndex((l) =>
+      /[A-Za-z]:\\Users\\|[A-Za-z]:\/Users\/|\/home\/[a-z0-9-]+\//i.test(l));
+    if (idx !== -1) {
+      sizinti++;
+      err(path.relative(kok, f) + ':' + (idx + 1) +
+        ' kişisel mutlak yol — ' + satirlar[idx].trim().slice(0, 55) +
+        '   (__dirname kullan)');
+    }
+  });
+  if (!sizinti) ok(taranan.length + ' dosyada kişisel yol yok');
+}
+
 /* ---- özet ---- */
 console.log('\n==============================');
 console.log('  ' + (errors ? errors + ' HATA, ' : '') + warnings + ' uyarı');
