@@ -1,0 +1,68 @@
+name: Yayin dogrulama
+
+# Her push'ta ve pull request'te calisir.
+# AmacI: magazaya gondermeden once "kirmizi bayrak" olusmasini engellemek.
+# Bir adim sonraki adima gecmeden once hata verip durur.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dogrula:
+    name: Kural + politika dogrulamasi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: DNR kural dogrulamasi
+        run: node tools/validate.js
+
+      - name: Pages kopyasi senkron mu?
+        run: |
+          node tools/publish-pages.js
+          if ! git diff --quiet -- docs/; then
+            echo "::error::docs/ klasoru web/ ile esit degil."
+            echo "Duzeltmek icin: node tools/publish-pages.js && git add docs/ && git commit"
+            git diff --stat -- docs/
+            exit 1
+          fi
+          echo "docs/ senkron."
+
+      - name: Gizlilik politikasi gercekten var mi?
+        run: |
+          # Politika dosyalari depoda olmali
+          for f in src/privacy.html web/privacy.html docs/privacy.html; do
+            test -f "$f" || { echo "::error::$f yok"; exit 1; }
+          done
+          echo "Gizlilik politikasi dosyalari mevcut."
+
+  yayinla:
+    name: GitHub Pages
+    # Yalnizca main'e dogrudan push oldugunda calisir (PR'da degil)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: dogrula
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
