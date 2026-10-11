@@ -90,12 +90,77 @@
     return btn;
   }
 
+  /* ---------------------------------------------------------------
+     Ne yapilacagina karar vermek. SAF fonksiyon.
+
+     Neden: onceki surum reklami sessize alip 16x yapardi. Bu calisir
+     ama 15 saniyelik reklam ~1 saniye GORUNUR. Kullanici sordu:
+     "gorsel olarak bir gorum mu?" Evet, goruyordu.
+
+     Siralama:
+       1) Atla dugmesi varsa tikla  -> en temiz yol, YouTube kendi
+                                        reklami dogru sekilde kapatir
+       2) Yoksa videoyu sonuna sar -> reklam ~1 karede biter,
+                                        kullanici reklam GORMEZ
+       3) Olmuyorsa sessiz + 16x   -> son care
+     */
+  var SONUNCU_SANIYE = 0.05;
+
+  /* dogrulanabilir sayi mi? (canli yayinlarda sure = Infinity) */
+  function sonluSayi(n) {
+    return typeof n === 'number' && isFinite(n) && n > 0;
+  }
+
+  /* Süre HENÜZ bilinmiyor mu?
+     Infinity "bilinmiyor" DEĞİLDİR — canlı yayında hep öyle kalır.
+     Ayırt etmek şart: yoksa sonsuza kadar bekleriz ve reklam
+     hiç bitmez. 0 ve NaN ise gerçekten henüz yüklenmemiştir. */
+  function sureBilinmiyor(n) {
+    return typeof n !== 'number' || isNaN(n) || n <= 0;
+  }
+
+  function plan(d) {
+    d = d || {};
+
+    // 1) Atla dugmesi
+    if (d.atlaVar) return { aksiyon: 'atla', sebep: 'atla dugmesi var' };
+
+    // 2) Süre henüz yüklenmedi — sonraki turda tekrar dene
+    if (sureBilinmiyor(d.sure)) {
+      return { aksiyon: 'bekle', sebep: 'süre henüz okunamadı' };
+    }
+
+    // 3) Sonuna sar — gorsel olarak reklam gorunmez
+    if (sonluSayi(d.sure)) {
+      return {
+        aksiyon: 'sonlandir',
+        hedef: Math.max(0, d.sure - SONUNCU_SANIYE),
+        sebep: 'reklam sonuna sarildi'
+      };
+    }
+
+    // 4) Canlı yayın (Infinity): sarma çalışmaz → sessiz + hız
+    return { aksiyon: 'hizlandir', hiz: 16, sebep: 'canlı yayın, süre sonu yok' };
+  }
+
+  /* ---------------------------------------------------------------
+     Kullaniciya gosterilecek is durumu. player.js bunu HTML
+     etiketine yazar; tanilama oradan okur (DOM iki dunya arasinda
+     paylasilir, FDI'nin kendisi paylasilmaz).
+     */
+  var REKLAM_ETIKETI = 'data-fd-player';
+
   var API = {
     AD_SELECTORS: AD_SELECTORS,
     SKIP_SELECTORS: SKIP_SELECTORS,
     gorunurMu: gorunurMu,
     reklamVarMi: reklamVarMi,
-    atlaDugmesi: atlaDugmesi
+    atlaDugmesi: atlaDugmesi,
+    plan: plan,
+    sonluSayi: sonluSayi,
+    sureBilinmiyor: sureBilinmiyor,
+    SONUNCU_SANIYE: SONUNCU_SANIYE,
+    REKLAM_ETIKETI: REKLAM_ETIKETI
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

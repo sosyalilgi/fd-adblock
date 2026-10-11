@@ -1,17 +1,22 @@
 /* =====================================================================
    FD Reklam Engelleyici — player.js
    ---------------------------------------------------------------------
-   Kozmetik filtrelerden sızan oynatıcı-içi reklamlar için son savunma:
-     • Atlanabilir reklamlarda "Atla" düğmesine anında tıklar
-     • Atlanamayan reklamları sessize alır ve 16x hızlandırır
-     • Reklam bittiğinde kullanıcının ses/hız ayarlarını geri yükler
-   İzole dünya.
+   Kozmetik filtrelerden sızan oynatıcı-içi reklamlar için son savunma.
 
-   Tespit mantığı player-detect.js'te (saf, test edilebilir). Buradaki
-   DÜZELTMELER önceki sürümde sessizce çalışmıyordu:
-     • AD_SELECTORS bir string idi ama dizi gibi iterate ediliyordu
-     • offsetParent kontrolü sabit konumlu reklamları görmüyordu
-     • setInterval 5 dakika sonra SÜRESİZ olarak duruyordu
+   Amaç: reklamı kullanıcıya GÖSTERMEMEK.
+
+   Önceki sürüm reklamı sessize alıp 16x yapıyordu; bu çalışıyordu
+   ama 15 saniyelik reklam ~1 saniye görünüyordu. Kullanıcının
+   sorduğu tam olarak buydu: "görsel olarak bir görüntü görüyor muyum?"
+
+   Şimdi sıra:
+     1. "Atla" düğmesi varsa tıkla      (YouTube kendi kapatır)
+     2. Yoksa videoyu sonuna sar        (reklam ~1 karede biter,
+                                         kullanıcı görmez)
+     3. Olmuyorsa sessiz + 16x          (son çare)
+
+   Tespit mantığı player-detect.js'te (saf, test edilebilir).
+   İzole dünya.
    ===================================================================== */
 (function () {
   'use strict';
@@ -21,7 +26,6 @@
 
   var PD = globalThis.FDPlayerDetect;
   if (!PD) {
-    // Bileşen yüklenemedi: reklam oynatıcıda kalır, sessizce çökmez.
     console.warn('[FD] player-detect yuklenemedi, oynatici yedegi devre disi');
     return;
   }
@@ -34,23 +38,25 @@
   var savedRate = 1;
   var savedMuted = false;
   var atlanan = 0;
+  var sonlandirilan = 0;
   var hizlandirilan = 0;
+  var sonPlan = null;
 
-  function adsPresent() {
-    return PD.reklamVarMi(sorgu);
+  function video() {
+    try { return document.querySelector('video'); } catch (e) { return null; }
   }
 
-  function trySkip() {
-    var btn = PD.atlaDugmesi(sorgu);
-    if (!btn) return false;
+  /* Tanılama bunu okur. FDI izole dünyada olduğu için doğrudan
+     görünmez; DOM etiketi iki dünya arasında paylaşılır. */
+  function durumuYaz() {
     try {
-      btn.click();
-      FDI.report('ads', 1);
-      atlanan++;
-      return true;
-    } catch (e) {
-      return false;
-    }
+      document.documentElement.setAttribute(PD.REKLAM_ETIKETI, JSON.stringify({
+        atlanan: atlanan,
+        sonlandirilan: sonlandirilan,
+        hizlandirilan: hizlandirilan,
+        sonPlan: sonPlan
+      }));
+    } catch (e) {}
   }
 
   function speedThrough(video) {
@@ -60,7 +66,6 @@
     savedMuted = !!video.muted;
     try {
       video.muted = true;
-      // 16 oynatıcının desteklediği en yüksek hızlardan biri
       video.playbackRate = 16;
       hizlandirilan++;
     } catch (e) {
@@ -77,8 +82,27 @@
     } catch (e) {}
   }
 
-  function video() {
-    try { return document.querySelector('video'); } catch (e) { return null; }
+  function trySkip() {
+    var btn = PD.atlaDugmesi(sorgu);
+    if (!btn) return false;
+    try {
+      btn.click();
+      FDI.report('ads', 1);
+      atlanan++;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* Reklamı sonuna sar → kullanıcı görmez. */
+  function seekToEnd(v) {
+    try {
+      v.currentTime = Math.max(0, v.duration - PD.SONUNCU_SANIYE);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   function tick() {
@@ -87,24 +111,44 @@
       if (v0) restore(v0);
       return;
     }
-    if (!adsPresent()) {
+
+    if (!PD.reklamVarMi(sorgu)) {
       var v = video();
       if (v) restore(v);
       return;
     }
-    if (!trySkip()) {
-      var v2 = video();
-      if (v2) speedThrough(v2);
+
+    var atlaDugmesiVar = !!PD.atlaDugmesi(sorgu);
+    var v2 = video();
+    var d = { atlaVar: atlaDugmesiVar, sure: v2 ? v2.duration : 0 };
+
+    var p = PD.plan(d);
+    sonPlan = p.aksiyon;
+
+    if (p.aksiyon === 'atla') {
+      trySkip();
+    } else if (p.aksiyon === 'sonlandir' && v2) {
+      // Önce sessize al (sesli son sıfır anı duyulmasın)
+      try { v2.muted = true; } catch (e) {}
+      if (seekToEnd(v2)) {
+        sonlandirilan++;
+        FDI.report('ads', 1);
+      } else {
+        speedThrough(v2);
+      }
+    } else if (p.aksiyon === 'hizlandir' && v2) {
+      speedThrough(v2);
     }
+    // 'bekle' → sonraki turda tekrar dene (süre henüz bilinmiyor)
+
+    durumuYaz();
   }
 
   FDI.initPlayer = function () {
-    trySkip();
+    durumuYaz();
 
     /* Zamanlayıcı KAPATILMAZ. Önceki sürüm 5 dakika sonra
-       clearInterval ile tamamen duruyordu; 5 dakikadan uzun izlenen
-       videolarda yedek ölüyordu. Bunun yerine sık sık yoklama
-       kademeli olarak seyreltilir: koruma hiç kesilmez. */
+       clearInterval ile tamamen duruyordu. */
     var HIZ = 400;
     var YAVAS = 1500;
     var iv = setInterval(tick, HIZ);
@@ -113,7 +157,6 @@
       iv = setInterval(tick, YAVAS);
     }, 300000);
 
-    // Sekme arka plana alininca gereksiz yoklama yapma
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
         clearInterval(iv);
@@ -123,7 +166,6 @@
       }
     });
 
-    // Yeni video açıldığında yeniden başlat
     document.addEventListener('yt-navigate-finish', function () {
       isSpeeding = false;
       setTimeout(tick, 300);
@@ -134,13 +176,17 @@
       if (v) restore(v);
     });
 
-    // Oynatıcı ilk yüklendiğinde teşhis
     document.addEventListener('yt-player-ready', function () {
-      if (adsPresent()) tick();
+      if (PD.reklamVarMi(sorgu)) tick();
     });
 
     FDI.playerStats = function () {
-      return { atlanan: atlanan, hizlandirilan: hizlandirilan };
+      return {
+        atlanan: atlanan,
+        sonlandirilan: sonlandirilan,
+        hizlandirilan: hizlandirilan,
+        sonPlan: sonPlan
+      };
     };
   };
 })();

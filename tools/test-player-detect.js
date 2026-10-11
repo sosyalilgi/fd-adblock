@@ -146,6 +146,64 @@ console.log('\n8) Atla düğmesi Yine de calisiyor mu?');
     PD.atlaDugmesi(s) === dugme);
 }
 
+console.log('\n9) KULLANICIYA REKAM GÖSTERMEYECEK PLAN');
+/* Kullanici sordu: "görsel olarak bir görüntü görüyor muyum?"
+   Önceki sürüm sessiz + 16x yapıyordu -> 15 sn'lik reklam ~1 sn
+   GÖRÜNÜYORDU. Şimdi sonuna sarma var. */
+{
+  // 1) Atla düğmesi varsa önce o
+  check('atla varsa -> atla',
+    PD.plan({ atlaVar: true }).aksiyon === 'atla');
+
+  // 2) Süre belli, atlanamaz -> sonuna sar
+  const p = PD.plan({ atlaVar: false, sure: 15 });
+  check('atlanamaz + süre 15 -> sonlandir', p.aksiyon === 'sonlandir', p.aksiyon);
+  check('hedef sürenin sonuna yakın',
+    p.hedef > 14.9 && p.hedef < 15, 'hedef=' + p.hedef);
+
+  // 3) Kullanıcı görmesin: hedef = süre - 0.05
+  check('hedef süreden küçük (görüntü kalmaz)',
+    p.hedef < 15 && 15 - p.hedef < 0.2, 'fark=' + (15 - p.hedef));
+
+  // 4) Canlı yayın: Infinity -> sarma çalışmaz, hızlandır
+  const canli = PD.plan({ atlaVar: false, sure: Infinity });
+  check('canlı yayın (Infinity) -> hizlandir', canli.aksiyon === 'hizlandir', canli.aksiyon);
+  check('son çare 16x', canli.hiz === 16);
+
+  // 5) Süre 0 / NaN -> henüz yüklenmemiş, bekle
+  check('süre 0 -> bekle', PD.plan({ atlaVar: false, sure: 0 }).aksiyon === 'bekle');
+  check('süre NaN -> bekle', PD.plan({ atlaVar: false, sure: NaN }).aksiyon === 'bekle');
+  check('süre yok -> bekle', PD.plan({ atlaVar: false }).aksiyon === 'bekle');
+
+  // 6) Sıralama: atla her zaman önce
+  check('atla + süre birlikte -> yine atla',
+    PD.plan({ atlaVar: true, sure: 30 }).aksiyon === 'atla');
+}
+
+console.log('\n10) sonluSayi — canlı yayin tuzağı');
+{
+  check('Infinity sayı değil', PD.sonluSayi(Infinity) === false);
+  check('NaN sayı değil', PD.sonluSayi(NaN) === false);
+  check('0 süre geçersiz', PD.sonluSayi(0) === false);
+  check('-1 geçersiz', PD.sonluSayi(-1) === false);
+  check('undefined geçersiz', PD.sonluSayi(undefined) === false);
+  check('15 geçerli', PD.sonluSayi(15) === true);
+
+  // sureBilinmiyor: Infinity BILINMIYOR DEGIL (canlı yayın hep öyle)
+  check('Infinity "bilinmiyor" DEĞİLDİR', PD.sureBilinmiyor(Infinity) === false);
+  check('0 bilinmiyor', PD.sureBilinmiyor(0) === true);
+  check('NaN bilinmiyor', PD.sureBilinmiyor(NaN) === true);
+  check('undefined bilinmiyor', PD.sureBilinmiyor(undefined) === true);
+  check('15 biliniyor', PD.sureBilinmiyor(15) === false);
+}
+
+console.log('\n11) Diyagnostik etiket tanimi');
+{
+  check('etiket adi tanimli', PD.REKLAM_ETIKETI === 'data-fd-player');
+  check('playerStats anahtarlari uyumlu',
+    ['atlanan', 'sonlandirilan', 'hizlandirilan'].every((k) => k.length > 3));
+}
+
 console.log('\n==============================');
 console.log('Gecen: ' + pass + ' | Kalan: ' + fail);
 process.exit(fail ? 1 : 0);

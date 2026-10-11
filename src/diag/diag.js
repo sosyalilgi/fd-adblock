@@ -257,16 +257,22 @@ function probe() {
     out.player.sure = v.currentTime.toFixed(1) + '/' + (v.duration || 0).toFixed(1);
 
     /* Oynatici yedeginin gercekten calisip calismadigini OLÇ.
-       ad-showing=true ve hiz=1 birlikte "reklam oynuyor ama
-       hizlandirmadi" demektir; bu iki sayi tek basina yeterli
-       kanit DEGILDIR. Yedegin kendi sayaclari vardir:
-         atlanan      -> "Atla" düğmesine basildi
-         hizlandirilan -> sessize alinip 16x yapildi
-       Ikisi de 0 ise yedek hic devreye girmedi. */
+       Bu prob MAIN dunya'da calisiyor; FDI ise IZOLE dunya'da
+       oldugu icin globalThis.FDI gorunmez. player.js durumu
+       <html> etiketine yazar; DOM iki dunya arasinda paylasilir,
+       etiket paylasilir. once globalThis.FDI denendi, sonra etiket.
+         atlanan       -> "Atla" düğmesine basildi
+         sonlandirilan -> reklam sonuna sarildi (gorsel olarak gorunmez)
+         hizlandirilan -> sessize alinip 16x yapildi (son care) */
     try {
-      out.player.yedek = (globalThis.FDI && typeof globalThis.FDI.playerStats === 'function')
-        ? globalThis.FDI.playerStats()
-        : null;
+      var yedek = null;
+      if (globalThis.FDI && typeof globalThis.FDI.playerStats === 'function') {
+        yedek = globalThis.FDI.playerStats();
+      } else {
+        var etiket = document.documentElement.getAttribute('data-fd-player');
+        if (etiket) yedek = JSON.parse(etiket);
+      }
+      out.player.yedek = yedek;
     } catch (e) {
       out.player.yedek = null;
     }
@@ -511,7 +517,11 @@ function render(r) {
   elOut.appendChild(renderCard('4 · Sızan reklamlar', visRows));
 
   const yedek = r.player.yedek;
-  const yedekCalisti = yedek && (yedek.atlanan > 0 || yedek.hizlandirilan > 0);
+  const yedekCalisti = yedek &&
+    (yedek.atlanan > 0 || yedek.sonlandirilan > 0 || yedek.hizlandirilan > 0);
+  const yedekToplam = yedek
+    ? (yedek.atlanan || 0) + (yedek.sonlandirilan || 0) + (yedek.hizlandirilan || 0)
+    : 0;
 
   const playerRows = r.player.durum
     ? [['Oynatıcı', r.player.durum, 'warn']]
@@ -521,15 +531,20 @@ function render(r) {
       ['Oynatma hızı', r.player.hiz + 'x', r.player.hiz > 2 ? 'warn' : 'dim'],
       ['Sessiz', String(r.player.sessiz), 'dim'],
       ['Süre', r.player.sure, 'dim'],
-      // Yedek çalıştı mı: ad-showing VE hız tek başına yetmez.
-      // Yedek ancak ikisi birden anlamlı: reklam oynuyorken hız 16'dır.
-      ['Yedek devrede', !yedek ? 'BİLİNMİYOR (player.js yüklü değil)'
-        : yedekCalisti
-          ? 'EVET — ' + (yedek.atlanan ? yedek.atlanan + ' kez atlandı' : '') +
-            (yedek.atlanan && yedek.hizlandirilan ? ' + ' : '') +
-            (yedek.hizlandirilan ? yedek.hizlandirilan + ' kez 16x' : '')
-          : (r.player.adShowing ? 'HAYIR — reklam oynuyor ama yedek tetiklenmedi' : 'bekliyor (reklam yok)'),
-        !yedek ? 'warn' : (r.player.adShowing && !yedekCalisti ? 'bad' : yedekCalisti ? 'ok' : 'dim')]
+      // Yedek ne yaptı? Kullanıcıya "gördü mü, görmedi mi" sorusunu
+      // doğrudan yanıtlar.
+      ['Yedek', !yedek
+        ? 'BİLİNMİYOR (player.js yüklü değil)'
+        : yedekToplam === 0
+          ? (r.player.adShowing ? 'ÇALIŞMADI — reklam oynuyor ama yedek tetiklenmedi' : 'bekliyor (henüz reklam gelmedi)')
+          : [
+            yedek.atlanan ? yedek.atlanan + ' atlandı' : null,
+            yedek.sonlandirilan ? yedek.sonlandirilan + ' sona sarıldı (görünmedi)' : null,
+            yedek.hizlandirilan ? yedek.hizlandirilan + ' 16x' : null
+          ].filter(Boolean).join(' · '),
+        !yedek ? 'warn'
+          : (r.player.adShowing && !yedekCalisti) ? 'bad'
+          : yedekCalisti ? 'ok' : 'dim']
     ];
   elOut.appendChild(renderCard('5 · Oynatıcı', playerRows));
 
