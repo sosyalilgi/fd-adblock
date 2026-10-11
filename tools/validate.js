@@ -631,6 +631,74 @@ console.log('\n=== content script kapsamı ===\n');
   });
 }
 
+/* ---- host izinleri ----
+   host_permissions, gerçekten İHTİYAÇ duyulan alan adları olmalı.
+   Fazlası hem mağaza incelemesinde gerekçe yükü getirir hem de
+   yayınlanan gizlilik politikasıyla çelişir.
+
+   Kural: host_permissions, content_scripts matches alt kümesi olmalı.
+   DNR engelleme kuralları host izni GEREKTİRMEZ; motor tarafında
+   çalışırlar. Bir host yalnızca "engellenecek" diye listelenmişse
+   izin olarak istenmesinin sebebi yoktur.
+
+   2026-10-11: doubleclick / googlesyndication / googlevideo host
+   izinleri kaldırıldı — kodda yalnızca URL metni eşleştirmede
+   geçiyorlardı, erişim için kullanılmıyordu. */
+console.log('\n=== host izinleri ===\n');
+{
+  const kok = path.join(__dirname, '..');
+  const m = JSON.parse(fs.readFileSync(path.join(kok, 'manifest.json'), 'utf8'));
+  const hp = m.host_permissions || [];
+
+  const gerekli = new Set();
+  (m.content_scripts || []).forEach((cs) => {
+    (cs.matches || []).forEach((p) => {
+      gerekli.add(p.replace(/^\*:\/\/\*\./, '').replace(/\/\*$/, ''));
+    });
+  });
+
+  const norm = (p) => p.replace(/^\*:\/\/\*\./, '').replace(/\/\*$/, '');
+
+  if (!gerekli.size) {
+    warn('content_scripts eşleşmesi yok — host izni denetimi yapılamıyor');
+  } else {
+    const fazlalik = hp.filter((p) => !gerekli.has(norm(p)));
+    if (fazlalik.length) {
+      fazlalik.forEach((p) => err('gereksiz host izni: ' + p +
+        ' — content_scripts bu alan adında çalışmıyor'));
+    } else {
+      ok(hp.length + ' host izni, hepsi content_scripts ile gerekçeli');
+    }
+  }
+
+  /* Politika "izin istemiyoruz" dediği adresler manifest'te OLMAMALI.
+     İkisi karşılaştırıldığında tutarsızlık inceleyici tarafından
+     "bize erişemezsiniz dediniz ama erişiyorsunuz" diye okunur. */
+  const politikalar = ['src/privacy.html', 'web/privacy.html']
+    .map((f) => path.join(kok, f))
+    .filter((f) => fs.existsSync(f));
+
+  let uyumsuz = 0;
+  politikalar.forEach((p) => {
+    const s = fs.readFileSync(p, 'utf8');
+    const bas = s.search(/Engellenen ama izin|Hosts blocked without/i);
+    if (bas === -1) return;
+    const bolum = s.slice(bas);
+    ['doubleclick.net', 'googlesyndication.com', 'googleadservices.com', '2mdn.net']
+      .forEach((h) => {
+        const politikaDiyor = bolum.indexOf(h) !== -1;
+        const manifestDiyor = hp.some((x) => x.indexOf(h) !== -1);
+        if (politikaDiyor && manifestDiyor) {
+          uyumsuz++;
+          err('politika "' + h + '" için "izin istemiyoruz" diyor ama manifest istiyor');
+        }
+      });
+  });
+  if (!uyumsuz && politikalar.length) {
+    ok('gizlilik politikası "izin istemiyoruz" dedikleri manifest\'te de yok');
+  }
+}
+
 /* ---- kişisel yol sızıntısı ----
    Geliştirme sırasında birden çok kez oldu: bir test dosyasına
    geliştiricinin kendi mutlak yolu yazıldı. Yerelde çalışır

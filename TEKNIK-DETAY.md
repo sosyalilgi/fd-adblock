@@ -3,7 +3,7 @@
 Bu dosya, eklentinin **nasıl çalıştığını** anlatan referans dokümanıdır.
 Günlük kullanım ve kurulum için [README.md](README.md) yeterlidir.
 
-Sürüm: 1.21.0 · Manifest V3 · Chrome 111+
+Sürüm: 1.22.0 · Manifest V3 · Chrome 111+
 
 ---
 
