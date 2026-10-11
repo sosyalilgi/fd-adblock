@@ -14,6 +14,8 @@ jobs:
   dogrula:
     name: Kural + politika dogrulamasi
     runs-on: ubuntu-latest
+    outputs:
+      testler: ${{ steps.testleri.outputs.liste }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,32 +37,61 @@ jobs:
           fi
           echo "docs/ senkron."
 
-      - name: Sürüm tutarlılığı (README / TEKNIK-DETAY / zip)
-        run: node tools/test-version.js
-
       - name: Magaza gorselleri hazir mi?
         run: node tools/check-screenshots.js
 
-      - name: Tum testler
+      - name: Gizlilik politikasi dosyalari var mi?
         run: |
-          for f in tools/test-*.js; do
-            echo "--- $f"
-            node "$f"
-          done
-
-      - name: Gizlilik politikasi gercekten var mi?
-        run: |
-          # Politika dosyalari depoda olmali
           for f in src/privacy.html web/privacy.html docs/privacy.html; do
             test -f "$f" || { echo "::error::$f yok"; exit 1; }
           done
           echo "Gizlilik politikasi dosyalari mevcut."
 
+      # Testleri listeleyip sonraki ise gecir. Yonlendirme (>-)
+      # kullanilir; GitHub cikti dosyalari ozel karakteri barindirir.
+      - name: Testleri listele
+        id: testleri
+        run: |
+          node -e "
+            const fs = require('fs');
+            const a = fs.readdirSync('tools')
+              .filter(f => f.endsWith('.js') && f.startsWith('test-'))
+              .map(f => f.slice(5, -3))
+              .sort();
+            console.log('[' + JSON.stringify(a).slice(1, -1) + ']');
+          " > /tmp/testler.json
+          echo "liste=$(cat /tmp/testler.json)" >> "$GITHUB_OUTPUT"
+          echo "Aday testler: $(cat /tmp/testler.json)"
+
+  # Her test AYRI BIR IS olarak calisir.
+  #
+  # Neden matrix: testler tek adimda toplu calistirilirsa "hangi test
+  # dustu" sorusunu yanitlamak icin logu okumak gerekir; oyun ici
+  # loglar kimlik dogrulama ister. Matrix ile IS ADLARI dogrudan
+  # okunur: basarisiz isin adi hatayi soyler.
+  testler:
+    name: test / ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    needs: dogrula
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.dogrula.outputs.testler) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Calistir
+        run: node tools/${{ matrix.test }}.js
+
   yayinla:
     name: GitHub Pages
     # Yalnizca main'e dogrudan push oldugunda calisir (PR'da degil)
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: dogrula
+    needs: [dogrula, testler]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -85,7 +116,7 @@ jobs:
           echo "::error::1) https://github.com/sosyalilgi/fd-adblock/settings/pages adresine git"
           echo "::error::2) 'Build and deployment' bolumunde Source: 'GitHub Actions' sec"
           echo "::error::3) Kaydet. Bu adim elle yapilmalidir, workflow acamaz."
-          echo "::error::4) Sonra değişikliği main'e pushla."
+          echo "::error::4) Sonra degisikligi main'e pushla."
           exit 1
 
       - uses: actions/upload-pages-artifact@v3
