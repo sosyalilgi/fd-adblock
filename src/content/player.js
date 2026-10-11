@@ -6,6 +6,12 @@
      • Atlanamayan reklamları sessize alır ve 16x hızlandırır
      • Reklam bittiğinde kullanıcının ses/hız ayarlarını geri yükler
    İzole dünya.
+
+   Tespit mantığı player-detect.js'te (saf, test edilebilir). Buradaki
+   DÜZELTMELER önceki sürümde sessizce çalışmıyordu:
+     • AD_SELECTORS bir string idi ama dizi gibi iterate ediliyordu
+     • offsetParent kontrolü sabit konumlu reklamları görmüyordu
+     • setInterval 5 dakika sonra SÜRESİZ olarak duruyordu
    ===================================================================== */
 (function () {
   'use strict';
@@ -13,45 +19,34 @@
   var FDI = globalThis.FDI;
   if (!FDI) return;
 
-  var SKIP_SELECTORS = [
-    '.ytp-ad-skip-button',
-    '.ytp-skip-ad-button',
-    '.ytp-ad-skip-button-modern',
-    '.ytp-ad-skip-button-slot button',
-    'button.ytp-ad-skip-button-modern'
-  ].join(',');
+  var PD = globalThis.FDPlayerDetect;
+  if (!PD) {
+    // Bileşen yüklenemedi: reklam oynatıcıda kalır, sessizce çökmez.
+    console.warn('[FD] player-detect yuklenemedi, oynatici yedegi devre disi');
+    return;
+  }
 
-  var AD_SELECTORS = [
-    '.video-ads',
-    'ytd-player-legacy-desktop-watch-ads-renderer',
-    '.ytp-ad-module',
-    '.ytp-ad-overlay-container'
-  ].join(',');
+  var sorgu = function (sel) {
+    try { return document.querySelector(sel); } catch (e) { return null; }
+  };
 
   var isSpeeding = false;
   var savedRate = 1;
   var savedMuted = false;
-  var processed = 0;
+  var atlanan = 0;
+  var hizlandirilan = 0;
 
   function adsPresent() {
-    try {
-      for (var i = 0; i < AD_SELECTORS.length; i++) {
-        var el = document.querySelector(AD_SELECTORS[i]);
-        if (el && el.offsetParent !== null) return true;
-      }
-    } catch (e) {}
-    return false;
+    return PD.reklamVarMi(sorgu);
   }
 
   function trySkip() {
-    var btn = null;
-    try { btn = document.querySelector(SKIP_SELECTORS); } catch (e) {}
+    var btn = PD.atlaDugmesi(sorgu);
     if (!btn) return false;
-    // Tıklanabilir olmasını bekle
-    if (btn.disabled) return false;
     try {
       btn.click();
       FDI.report('ads', 1);
+      atlanan++;
       return true;
     } catch (e) {
       return false;
@@ -67,6 +62,7 @@
       video.muted = true;
       // 16 oynatıcının desteklediği en yüksek hızlardan biri
       video.playbackRate = 16;
+      hizlandirilan++;
     } catch (e) {
       isSpeeding = false;
     }
@@ -81,29 +77,51 @@
     } catch (e) {}
   }
 
+  function video() {
+    try { return document.querySelector('video'); } catch (e) { return null; }
+  }
+
   function tick() {
     if (FDI.prefs && FDI.prefs.enabled === false) {
-      // Kapalıyken hızı geri yüklemeyi unutma
-      var v0 = document.querySelector('video');
+      var v0 = video();
       if (v0) restore(v0);
       return;
     }
     if (!adsPresent()) {
-      var v = document.querySelector('video');
+      var v = video();
       if (v) restore(v);
       return;
     }
     if (!trySkip()) {
-      var v2 = document.querySelector('video');
+      var v2 = video();
       if (v2) speedThrough(v2);
     }
   }
 
   FDI.initPlayer = function () {
     trySkip();
-    // Oynatıcı ilk yüklendiğinde bir kez çalıştır
-    var iv = setInterval(tick, 400);
-    setTimeout(function () { clearInterval(iv); }, 300000); // 5 dk sonra seyrelt
+
+    /* Zamanlayıcı KAPATILMAZ. Önceki sürüm 5 dakika sonra
+       clearInterval ile tamamen duruyordu; 5 dakikadan uzun izlenen
+       videolarda yedek ölüyordu. Bunun yerine sık sık yoklama
+       kademeli olarak seyreltilir: koruma hiç kesilmez. */
+    var HIZ = 400;
+    var YAVAS = 1500;
+    var iv = setInterval(tick, HIZ);
+    setTimeout(function () {
+      clearInterval(iv);
+      iv = setInterval(tick, YAVAS);
+    }, 300000);
+
+    // Sekme arka plana alininca gereksiz yoklama yapma
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        clearInterval(iv);
+      } else {
+        tick();
+        iv = setInterval(tick, YAVAS);
+      }
+    });
 
     // Yeni video açıldığında yeniden başlat
     document.addEventListener('yt-navigate-finish', function () {
@@ -112,7 +130,7 @@
     });
 
     window.addEventListener('pagehide', function () {
-      var v = document.querySelector('video');
+      var v = video();
       if (v) restore(v);
     });
 
@@ -121,6 +139,8 @@
       if (adsPresent()) tick();
     });
 
-    processed++;
+    FDI.playerStats = function () {
+      return { atlanan: atlanan, hizlandirilan: hizlandirilan };
+    };
   };
 })();

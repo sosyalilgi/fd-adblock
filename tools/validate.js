@@ -440,6 +440,69 @@ console.log('\n=== manifest kimlik alanları ===\n');
   else warn('manifest.homepage_url yok');
 }
 
+/* ---- content script kapsamı ----
+   src/content/ altına yeni bir dosya ekleyip manifest'e yazmazsan
+   dosya hiç çalışmaz ve BUNU HİÇBİR ŞEY SÖYLEMEZ. player-detect.js
+   eklerken tam olarak bu tuzağa düşmemek için kontrol eklendi.
+
+   Not: Her dosya content_scripts'te olmak zorunda degil. Bazi dosyalar
+   chrome.scripting.executeScript ile veya picker gibi bir modul
+   tarafindan geci yuklenir (bkz. background.js). */
+console.log('\n=== content script kapsamı ===\n');
+{
+  const kok = path.join(__dirname, '..');
+  const m = JSON.parse(fs.readFileSync(path.join(kok, 'manifest.json'), 'utf8'));
+
+  // 1) manifest'te bildirilen her dosya gercekten var mi?
+  const bildirilen = [];
+  (m.content_scripts || []).forEach((cs) => (cs.js || []).forEach((j) => bildirilen.push(j)));
+  let eksik = 0;
+  bildirilen.forEach((j) => {
+    if (!fs.existsSync(path.join(kok, j))) { err('manifest bildiriyor ama dosya yok: ' + j); eksik++; }
+  });
+  if (!eksik) ok(bildirilen.length + ' content script dosyası mevcut');
+
+  // 2) Programatik olarak enjekte edilen dosyalar (background.js)
+  const bg = fs.readFileSync(path.join(kok, 'src', 'background.js'), 'utf8');
+  const enjekte = new Set();
+  const rx = /files:\s*\[([^\]]+)\]/g;
+  let m2;
+  while ((m2 = rx.exec(bg))) {
+    m2[1].split(',').forEach((s) => {
+      const yol = s.trim().replace(/^['"]|['"]$/g, '');
+      if (yol) enjekte.add(yol);
+    });
+  }
+  if (enjekte.size) ok('programatik enjekte: ' + Array.from(enjekte).join(', '));
+
+  // 3) src/content/ altındaki her dosya ya manifest'te ya enjekte ediliyor
+  const disarida = fs.readdirSync(path.join(kok, 'src', 'content'))
+    .filter((f) => f.endsWith('.js'))
+    .filter((f) => !bildirilen.includes('src/content/' + f))
+    .filter((f) => !enjekte.has('src/content/' + f));
+
+  if (disarida.length) {
+    disarida.forEach((f) => err("src/content/" + f + " manifest'te de enjekte listesinde de yok — çalışmayacak"));
+  } else {
+    ok('src/content/ altındaki tüm dosyalar bir yere bağlı');
+  }
+
+  // 4) Yardımcı moduller disa aktarim yapabilmeli (testler gercek
+  //    dosyayi yukleyebilsin). Iki bicim kabul edilir:
+  //      a) globalThis.FDX = api   -> vm ile test edilir
+  //      b) module.exports = api   -> require ile test edilir
+  ['selector-gen.js', 'player-detect.js'].forEach((f) => {
+    const kaynak = fs.readFileSync(path.join(kok, 'src', 'content', f), 'utf8');
+    const vmUyum = /globalThis\.FD\w+\s*=/.test(kaynak);
+    const reqUyum = /module\.exports/.test(kaynak);
+    if (vmUyum || reqUyum) {
+      ok(f + ' dışa aktarım var (' + (reqUyum ? 'module.exports' : 'globalThis') + ')');
+    } else {
+      err(f + ' dışa aktarım yok — testler bu dosyayı yükleyemez');
+    }
+  });
+}
+
 /* ---- özet ---- */
 console.log('\n==============================');
 console.log('  ' + (errors ? errors + ' HATA, ' : '') + warnings + ' uyarı');

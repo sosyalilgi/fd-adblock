@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FD Reklam Engelleyici",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "YouTube reklamlarını engeller ve sayfayı kozmetik olarak temizler.",
   "author": "Ferhat Doğan",
   "homepage_url": "https://266hosting.com",
@@ -72,6 +72,7 @@
       "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
       "js": [
         "src/content/prefs.js",
+        "src/content/player-detect.js",
         "src/content/cosmetic.js",
         "src/content/player.js",
         "src/content/main.js"
